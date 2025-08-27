@@ -564,28 +564,3 @@ The existing `avironactive.com/resource` package provides:
 - **Template Resolution**: Parameter injection and path resolution
 
 This comprehensive domain layer requires no modifications and can be directly integrated into the Clean Architecture approach.
-
-
-Open questions:
-- should we use pattern factory method for convert object to model?
-like 
-```type ModelResponse struct {
-	// fields...
-}
-func NewModelResponseFromDTO(dto DTO) *ModelResponse {
-   return &ModelResponse{
-	  // mapping fields...
-   }
-}
-
-```
-
-``` type ModelRequest struct {
-	// fields...
-}
-
-func (r *ModelRequest) To() *Options {
-	return &Options{
-		// mapping fields...
-	}
-}

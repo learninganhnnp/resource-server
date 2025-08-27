@@ -25,11 +25,11 @@ func (h *ResourceDefinitionHandler) ListDefinitions(c *fiber.Ctx) error {
 	definitions, err := h.useCase.ListDefinitions(toContext(c))
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(
-			dto.ErrorResponse("DEFINITIONS_ERROR", "Failed to retrieve definitions", err.Error()),
+			dto.NewErrorResponse("DEFINITIONS_ERROR", "Failed to retrieve definitions", err.Error()),
 		)
 	}
 
-	return c.JSON(dto.SuccessResponse(definitions))
+	return c.JSON(dto.NewSuccessResponse(definitions))
 }
 
 // GetDefinition handles GET /api/v1/resources/definitions/:name
@@ -37,18 +37,18 @@ func (h *ResourceDefinitionHandler) GetDefinition(c *fiber.Ctx) error {
 	name := c.Params("name")
 	if name == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(
-			dto.ErrorResponse("INVALID_PARAMETER", "Definition name is required", ""),
+			dto.NewErrorResponse("INVALID_PARAMETER", "Definition name is required", ""),
 		)
 	}
 
 	definition, err := h.useCase.GetDefinition(toContext(c), name)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(
-			dto.ErrorResponse("DEFINITION_NOT_FOUND", "Definition not found", err.Error()),
+			dto.NewErrorResponse("DEFINITION_NOT_FOUND", "Definition not found", err.Error()),
 		)
 	}
 
-	return c.JSON(dto.SuccessResponse(definition))
+	return c.JSON(dto.NewSuccessResponse(definition))
 }
 
 func toContext(c *fiber.Ctx) context.Context {

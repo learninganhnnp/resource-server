@@ -101,4 +101,4 @@ require (
 	google.golang.org/protobuf v1.36.6 // indirect
 )
 
-replace avironactive.com v0.0.0 => /Users/anhnguyen/Data/aviron/game-server-common
+replace avironactive.com v0.0.0 => /home/anh-nguyen/project/work/aviron/game-server-common

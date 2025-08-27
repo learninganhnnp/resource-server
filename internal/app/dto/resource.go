@@ -29,7 +29,15 @@ type PathParameterResponse struct {
 type ProviderResponse struct {
 	Name         string               `json:"name"`
 	Capabilities ProviderCapabilities `json:"capabilities"`
-	Constraints  map[string]any       `json:"constraints,omitempty"`
+}
+
+// NewProviderResponse creates ProviderResponse from provider.Provider
+func NewProviderResponse(prov provider.Provider) *ProviderResponse {
+	caps := prov.Capabilities()
+	return &ProviderResponse{
+		Name:         string(prov.Name()),
+		Capabilities: *NewProviderCapabilities(caps),
+	}
 }
 
 // MultipartCapabilities represents multipart upload capabilities
@@ -56,6 +64,33 @@ type ProviderCapabilities struct {
 	Multipart                  *MultipartCapabilities       `json:"multipart,omitempty"`        // Multipart upload capabilities (if supported)
 }
 
+func NewProviderCapabilities(caps *provider.Capabilities) *ProviderCapabilities {
+	var multipart *MultipartCapabilities
+	if caps.Multipart != nil {
+		multipart = &MultipartCapabilities{
+			MinPartSize: caps.Multipart.MinPartSize,
+			MaxPartSize: caps.Multipart.MaxPartSize,
+			MaxParts:    caps.Multipart.MaxParts,
+		}
+	}
+
+	return &ProviderCapabilities{
+		SupportsRead:               caps.SupportsRead,
+		SupportsWrite:              caps.SupportsWrite,
+		SupportsDelete:             caps.SupportsDelete,
+		SupportsListing:            caps.SupportsListing,
+		SupportsMetadata:           caps.SupportsMetadata,
+		SupportsMultipart:          caps.SupportsMultipart,
+		SupportsResumableUploads:   caps.SupportsResumableUploads,
+		SupportsSignedURLs:         caps.SupportsSignedURLs,
+		SupportsChecksumAlgorithms: caps.SupportsChecksumAlgorithms,
+		MaxUploadSize:              caps.MaxUploadSize,
+		MaxExpiry:                  caps.MaxExpiry,
+		MinExpiry:                  caps.MinExpiry,
+		Multipart:                  multipart,
+	}
+}
+
 // FileListResponse represents a paginated list of files
 type FileListResponse struct {
 	Files             []FileInfo `json:"files"`
@@ -78,9 +113,9 @@ type FileInfo struct {
 type UploadRequest struct {
 	Parameters map[string]string `json:"parameters" validate:"dive,keys,alphanum,endkeys,max=256"`
 	Scope      string            `json:"scope" validate:"omitempty,oneof=G A CA"`
-	ScopeValue int               `json:"scopeValue,omitempty" validate:"omitempty,min=1"`
+	ScopeValue int16             `json:"scopeValue,omitempty" validate:"omitempty,min=1"`
 	Expiry     string            `json:"expiry,omitempty" validate:"omitempty,duration"`
-	Metadata   UploadMetadata    `json:"metadata,omitempty" validate:"omitempty"`
+	Metadata   *UploadMetadata   `json:"metadata,omitempty" validate:"omitempty"`
 }
 
 func (r UploadRequest) To() *resource.UploadResolveOptions {
@@ -114,8 +149,25 @@ type UploadMetadata struct {
 	ContentLanguage    string            `json:"contentLanguage,omitempty" validate:"omitempty,max=32"`
 	ContentDisposition string            `json:"contentDisposition,omitempty" validate:"omitempty,max=256"`
 	CacheControl       string            `json:"cacheControl,omitempty" validate:"omitempty,max=128"`
+	StorageClass       string            `json:"storageClass,omitempty" validate:"omitempty,max=32,oneof=STANDARD NEARLINE COLDLINE ARCHIVE INTELLIGENT_TIERING"` // Example for GCS
 	ACL                string            `json:"acl,omitempty" validate:"omitempty,oneof=private public-read public-read-write authenticated-read"`
 	CustomHeaders      map[string]string `json:"customHeaders,omitempty" validate:"omitempty,dive,keys,max=64,endkeys,max=512"`
+}
+
+func (m *UploadMetadata) ToRequestHeaders() *provider.RequestHeaders {
+	if m == nil {
+		return nil
+	}
+	return &provider.RequestHeaders{
+		ContentType:        m.ContentType,
+		ContentEncoding:    m.ContentEncoding,
+		ContentLanguage:    m.ContentLanguage,
+		ContentDisposition: m.ContentDisposition,
+		CacheControl:       m.CacheControl,
+		ACL:                provider.ACLType(m.ACL),
+		StorageClass:       provider.StorageClassType(m.StorageClass),
+		Metadata:           m.CustomHeaders,
+	}
 }
 
 // MultipartUploadRequest represents a request for multipart upload
@@ -134,29 +186,43 @@ type DownloadRequest struct {
 	ResponseHeaders map[string]string `json:"responseHeaders,omitempty" validate:"omitempty,dive,keys,max=64,endkeys,max=512"`
 }
 
+func (r *DownloadRequest) To() *resource.DownloadResolveOptions {
+	opts := &resource.DownloadResolveOptions{}
+	if r.Expiry != "" {
+		// Parse expiry duration and set on options
+		// This would need to be implemented based on your duration parsing logic
+	}
+	if len(r.ResponseHeaders) > 0 {
+		// Set response headers on options
+		// This would need to be implemented based on your options structure
+	}
+	return opts
+}
+
 // SignedURLResponse represents a signed URL response
 type SignedURLResponse struct {
-	URL       string            `json:"url"`
-	Method    string            `json:"method"`
-	Headers   map[string]string `json:"headers,omitempty"`
-	ExpiresAt time.Time         `json:"expiresAt"`
+	URL         string            `json:"url"`
+	Method      string            `json:"method"`
+	ResolvePath string            `json:"resolvePath,omitempty"`
+	Headers     map[string]string `json:"headers,omitempty"`
+	ExpiresAt   time.Time         `json:"expiresAt"`
 }
 
 // MultipartUploadResponse represents a multipart upload response
 type MultipartUploadResponse struct {
 	UploadID    string             `json:"uploadId"`
 	PartURLs    []MultipartPartURL `json:"partUrls"`
-	CompleteURL string             `json:"completeUrl"`
-	AbortURL    string             `json:"abortUrl"`
+	CompleteURL SignedURLResponse  `json:"completeUrl"`
+	AbortURL    SignedURLResponse  `json:"abortUrl"`
 	MinPartSize int64              `json:"minPartSize"`
 	MaxPartSize int64              `json:"maxPartSize"`
 }
 
 // MultipartPartURL represents a single part URL in multipart upload
 type MultipartPartURL struct {
-	PartNumber int    `json:"partNumber"`
-	URL        string `json:"url"`
-	Method     string `json:"method"`
+	SignedURLResponse
+
+	PartNumber int `json:"partNumber"`
 }
 
 // FileMetadata represents file metadata
@@ -184,6 +250,14 @@ type ChecksumInfo struct {
 	Value     string `json:"value"`
 }
 
+// ToProviderChecksum converts ChecksumInfo to provider.Checksum
+func (c *ChecksumInfo) ToProviderChecksum() *provider.Checksum {
+	return &provider.Checksum{
+		Algorithm: provider.ChecksumAlgorithm(c.Algorithm),
+		Value:     c.Value,
+	}
+}
+
 // MetadataUpdateRequest represents a request to update file metadata
 type MetadataUpdateRequest struct {
 	ContentType        string            `json:"contentType,omitempty" validate:"omitempty,max=128"`
@@ -193,4 +267,169 @@ type MetadataUpdateRequest struct {
 	CacheControl       string            `json:"cacheControl,omitempty" validate:"omitempty,max=128"`
 	ACL                string            `json:"acl,omitempty" validate:"omitempty,oneof=private public-read public-read-write authenticated-read"`
 	CustomHeaders      map[string]string `json:"customHeaders,omitempty" validate:"omitempty,dive,keys,max=64,endkeys,max=512"`
+}
+
+func (r *MetadataUpdateRequest) ToRequestHeaders() *provider.RequestHeaders {
+	return &provider.RequestHeaders{
+		ContentType:        r.ContentType,
+		ContentEncoding:    r.ContentEncoding,
+		ContentLanguage:    r.ContentLanguage,
+		ContentDisposition: r.ContentDisposition,
+		CacheControl:       r.CacheControl,
+		ACL:                provider.ACLType(r.ACL),
+		Metadata:           r.CustomHeaders,
+	}
+}
+
+func (r *MetadataUpdateRequest) ToUpdateMetadata() *provider.UpdateMetadata {
+	updateOpts := &provider.UpdateMetadata{}
+
+	if r.ContentType != "" {
+		updateOpts.ContentType = &r.ContentType
+	}
+	if r.ContentEncoding != "" {
+		updateOpts.ContentEncoding = &r.ContentEncoding
+	}
+	if r.ContentLanguage != "" {
+		updateOpts.ContentLanguage = &r.ContentLanguage
+	}
+	if r.ContentDisposition != "" {
+		updateOpts.ContentDisposition = &r.ContentDisposition
+	}
+	if r.CacheControl != "" {
+		updateOpts.CacheControl = &r.CacheControl
+	}
+	if r.ACL != "" {
+		acl := provider.ACLType(r.ACL)
+		updateOpts.ACL = &acl
+	}
+	if len(r.CustomHeaders) > 0 {
+		updateOpts.CustomHeaders = r.CustomHeaders
+	}
+
+	return updateOpts
+}
+
+// MultipartInitRequest represents a request to initialize multipart upload
+type MultipartInitRequest struct {
+	DefinitionName string            `json:"definitionName" validate:"required,alphanum,max=128"`
+	Provider       string            `json:"provider" validate:"required,oneof=cdn gcs r2"`
+	Scope          string            `json:"scope" validate:"omitempty,oneof=G A CA"`
+	ScopeValue     int16             `json:"scopeValue,omitempty" validate:"omitempty,min=1"`
+	ParamResolver  map[string]string `json:"paramResolver" validate:"dive,keys,alphanum,endkeys,max=256"`
+	Metadata       *UploadMetadata   `json:"metadata,omitempty"`
+}
+
+func (req MultipartInitRequest) To() *resource.DownloadResolveOptions {
+	opts := (&resource.DownloadResolveOptions{}).
+		WithProvider(provider.ProviderName(req.Provider))
+
+	if req.Scope != "" {
+		opts = opts.WithScope(resource.ScopeType(req.Scope), req.ScopeValue)
+	}
+
+	// Add parameters to options
+	if req.ParamResolver != nil {
+		params := make(map[resource.ParameterName]string)
+		for k, v := range req.ParamResolver {
+			params[resource.ParameterName(k)] = v
+		}
+		opts = opts.WithValues(params)
+	}
+
+	return opts
+}
+
+// MultipartInitResponse represents the response from multipart init
+type MultipartInitResponse struct {
+	UploadID    string `json:"uploadId"`
+	Path        string `json:"path"`
+	Provider    string `json:"provider"`
+	MaxPartSize int64  `json:"maxPartSize,omitempty"`
+	MinPartSize int64  `json:"minPartSize,omitempty"`
+	MaxParts    int    `json:"maxParts,omitempty"`
+}
+
+// MultipartURLsRequest represents a request to get multipart upload URLs
+type MultipartURLsRequest struct {
+	Path       string         `json:"path" validate:"required,alphanum,max=128"`
+	UploadID   string         `json:"uploadId" validate:"required,max=256"`
+	Provider   string         `json:"provider" validate:"required,oneof=cdn gcs r2"`
+	URLOptions []*PartRequest `json:"urlOptions" validate:"required,dive"`
+}
+
+func (req MultipartURLsRequest) To() *resource.MultipartURLsResolveOptions {
+	var parts = make([]provider.Part, 0, len(req.URLOptions))
+	for _, partReq := range req.URLOptions {
+		parts = append(parts, partReq.To())
+	}
+
+	urlOpts := (&resource.MultipartURLsResolveOptions{
+		URLOptions: &provider.MultipartURLsOption{
+			Parts: parts,
+		},
+	}).WithProvider(provider.ProviderName(req.Provider))
+
+	return urlOpts
+}
+
+type PartRequest struct {
+	PartNumber int          `json:"partNumber" validate:"required,min=1"`
+	Checksum   ChecksumInfo `json:"checksum" validate:"required"`
+}
+
+func (r *PartRequest) To() provider.Part {
+	return provider.Part{
+		Number:   r.PartNumber,
+		Checksum: r.Checksum.ToProviderChecksum(),
+	}
+}
+
+// MultipartURLsResponse represents the response with multipart URLs
+type MultipartURLsResponse struct {
+	PartURLs    []MultipartPartURL `json:"partUrls"`
+	CompleteURL SignedURLResponse  `json:"completeUrl"`
+	AbortURL    SignedURLResponse  `json:"abortUrl"`
+}
+
+// ListFilesRequest represents a request to list files with pagination
+type ListFilesRequest struct {
+	Provider          string `json:"provider" validate:"required,oneof=cdn gcs r2"`
+	Definition        string `json:"definition" validate:"required,alphanum,max=128"`
+	MaxKeys           int32  `json:"maxKeys,omitempty" validate:"omitempty,min=1,max=1000"`
+	ContinuationToken string `json:"continuationToken,omitempty"`
+	Prefix            string `json:"prefix,omitempty" validate:"omitempty,max=256"`
+}
+
+// GenerateUploadURLRequest represents a request to generate an upload URL
+type GenerateUploadURLRequest struct {
+	Provider   string         `json:"provider" validate:"required,oneof=cdn gcs r2"`
+	Definition string         `json:"definition" validate:"required,alphanum,max=128"`
+	Upload     *UploadRequest `json:"upload" validate:"required"`
+}
+
+// GenerateDownloadURLRequest represents a request to generate a download URL
+type GenerateDownloadURLRequest struct {
+	Provider string           `json:"provider" validate:"required,oneof=cdn gcs r2"`
+	FilePath string           `json:"filePath" validate:"required,max=512"`
+	Download *DownloadRequest `json:"download,omitempty"`
+}
+
+// DeleteFileRequest represents a request to delete a file
+type DeleteFileRequest struct {
+	Provider string `json:"provider" validate:"required,oneof=cdn gcs r2"`
+	FilePath string `json:"filePath" validate:"required,max=512"`
+}
+
+// GetFileMetadataRequest represents a request to get file metadata
+type GetFileMetadataRequest struct {
+	Provider string `json:"provider" validate:"required,oneof=cdn gcs r2"`
+	FilePath string `json:"filePath" validate:"required,max=512"`
+}
+
+// UpdateFileMetadataRequest represents a request to update file metadata
+type UpdateFileMetadataRequest struct {
+	Provider string                 `json:"provider" validate:"required,oneof=cdn gcs r2"`
+	FilePath string                 `json:"filePath" validate:"required,max=512"`
+	Metadata *MetadataUpdateRequest `json:"metadata" validate:"required"`
 }

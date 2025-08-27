@@ -14,31 +14,3 @@ type APIError struct {
 	Details string `json:"details,omitempty"`
 }
 
-// SuccessResponse creates a successful API response
-func SuccessResponse(data interface{}) APIResponse {
-	return APIResponse{
-		Success: true,
-		Data:    data,
-	}
-}
-
-// SuccessResponseWithMessage creates a successful API response with message
-func SuccessResponseWithMessage(data interface{}, message string) APIResponse {
-	return APIResponse{
-		Success: true,
-		Data:    data,
-		Message: message,
-	}
-}
-
-// ErrorResponse creates an error API response
-func ErrorResponse(code string, message string, details string) APIResponse {
-	return APIResponse{
-		Success: false,
-		Message: message,
-		Error: &APIError{
-			Code:    code,
-			Details: details,
-		},
-	}
-}

@@ -53,13 +53,12 @@ POST /multipart/init
 ```
 
 ### Server Internal Flow
-1. **Server** calls `PathDefinitionResolver.ResolveMultipartInitURL()`
+1. **Server** calls `PathDefinitionResolver.ResolveReadURL()`
 2. **Server** gets provider-specific init URL
-3. **Server** makes HTTP request to provider's init URL
+3. **Server** calls `provider.MultipartProvider.CreateInitMulpartUpload`
 4. **Provider** returns response:
-   - **S3**: XML with `<UploadId>`, `<Bucket>`, `<Key>`
-   - **GCS**: JSON with `upload_id`, `bucket`, `name`
-   - **R2**: Provider-specific format
+   - **S3/R2**: XML with `<UploadId>`, `<Bucket>`, `<Key>`
+   - **GCS**: don't support multipart natively, simulate with resumable upload
 5. **Server** parses provider response to extract `uploadID`
 
 ### Server → Client Response

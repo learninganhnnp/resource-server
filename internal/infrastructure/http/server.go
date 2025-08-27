@@ -74,6 +74,9 @@ func (s *Server) SetupRoutes() {
 	fileOperationsUseCase := usecases.NewFileOperationsUseCase(s.resourceManager)
 	fileOperationsHandler := handlers.NewFileOperationsHandler(fileOperationsUseCase)
 
+	multipartUseCase := usecases.NewMultipartUseCase(s.resourceManager)
+	multipartHandler := handlers.NewMultipartHandler(multipartUseCase)
+
 	// Resources group
 	resources := api.Group("/resources")
 
@@ -88,11 +91,12 @@ func (s *Server) SetupRoutes() {
 	// File operation routes
 	resources.Get("/:provider/:definition", fileOperationsHandler.ListFiles)
 	resources.Post("/:provider/:definition/upload", fileOperationsHandler.GenerateUploadURL)
-	resources.Post("/:provider/:definition/upload/multipart", fileOperationsHandler.GenerateMultipartUploadURLs)
 	resources.Post("/:provider/*/download", fileOperationsHandler.GenerateDownloadURL)
 	resources.Get("/:provider/*/metadata", fileOperationsHandler.GetFileMetadata)
 	resources.Put("/:provider/*/metadata", fileOperationsHandler.UpdateFileMetadata)
 	resources.Delete("/:provider/*", fileOperationsHandler.DeleteFile)
+	resources.Post("/multipart/init", multipartHandler.InitMultipartUpload)
+	resources.Post("/multipart/urls", multipartHandler.GetMultipartURLs)
 }
 
 func (s *Server) Start() error {
