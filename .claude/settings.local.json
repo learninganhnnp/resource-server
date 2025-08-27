@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(/Users/anhnguyen/Data/aviron/game-server-common/resource/provider/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
