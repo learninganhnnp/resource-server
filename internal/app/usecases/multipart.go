@@ -28,9 +28,9 @@ func (uc *MultipartUseCase) InitMultipartUpload(ctx context.Context, req *dto.Mu
 	opts := req.To()
 
 	// Get the path using ResolveReadURL
-	pathResult, err := uc.manager.PathDefinitionResolver().ResolveDownloadURL(
+	pathResult, err := uc.manager.DefinitionResolver().ResolveDownloadURL(
 		ctx,
-		resolver.PathDefinitionName(req.DefinitionName),
+		resolver.DefinitionName(req.DefinitionName),
 		opts,
 	)
 	if err != nil {
@@ -65,7 +65,7 @@ func (uc *MultipartUseCase) InitMultipartUpload(ctx context.Context, req *dto.Mu
 // GetMultipartURLs gets signed URLs for multipart upload parts
 func (uc *MultipartUseCase) GetMultipartURLs(ctx context.Context, req *dto.MultipartURLsRequest) (*dto.MultipartURLsResponse, error) {
 	opts := req.To()
-	urlResolver := uc.manager.PathURLResolver()
+	urlResolver := uc.manager.URLResolver()
 	multipartResult, err := urlResolver.ResolveMultipartURLs(
 		ctx,
 		req.Path, // Use the path from the request

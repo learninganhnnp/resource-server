@@ -24,8 +24,8 @@ Central interface for managing resource definitions and resolution.
 
 ```go
 type ResourceManager interface {
-    PathURLResolver() PathURLResolver
-    PathDefinitionResolver() PathDefinitionResolver
+    URLResolver() URLResolver
+    DefinitionResolver() DefinitionResolver
     
     GetDefinition(name string) (*PathDefinition, error)
     AddDefinition(definition PathDefinition) error
@@ -272,7 +272,7 @@ opts := ResolveOptions{}.WithValues(map[ParameterName]string{
     "user_id": "123",
 })
 
-result, err := manager.PathDefinitionResolver().Resolve(ctx, "user-avatars", &opts)
+result, err := manager.DefinitionResolver().Resolve(ctx, "user-avatars", &opts)
 if err != nil {
     log.Fatal(err)
 }
@@ -304,7 +304,7 @@ opts := ResolveOptions{
     },
 }
 
-result, err := manager.PathDefinitionResolver().Resolve(ctx, "user-avatars", &opts)
+result, err := manager.DefinitionResolver().Resolve(ctx, "user-avatars", &opts)
 ```
 
 ### Template Processing
@@ -341,10 +341,10 @@ opts := ResolveOptions{}.
     WithURLType(URLTypeOperation).
     WithValues(map[ParameterName]string{"user_id": "789"})
 
-result, err := manager.PathDefinitionResolver().Resolve(ctx, "user-avatars", &opts)
+result, err := manager.DefinitionResolver().Resolve(ctx, "user-avatars", &opts)
 
 // Direct URL resolution
-pathResolver := manager.PathURLResolver() 
+pathResolver := manager.URLResolver() 
 resolvedPath := "users/avatars/789.png"
 
 urlResult, err := pathResolver.Resolve(ctx, resolvedPath, &ResolveOptions{

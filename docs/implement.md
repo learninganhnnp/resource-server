@@ -230,7 +230,7 @@ type ResourceManager interface {
     ProviderRegistry() provider.Registry
     
     // Path resolution
-    PathResolver() resolver.PathDefinitionResolver
+    PathResolver() resolver.DefinitionResolver
     
     // Upload orchestration (delegates to upload services)
     UploadManager() upload.UploadServiceFacade

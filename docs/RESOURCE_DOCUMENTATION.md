@@ -73,8 +73,8 @@ The main entry point that orchestrates all resource resolution operations.
 
 ```go
 type ResourceManager interface {
-    PathURLResolver() PathURLResolver
-    PathDefinitionResolver() PathDefinitionResolver
+    URLResolver() URLResolver
+    DefinitionResolver() DefinitionResolver
     GetDefinition(name string) (*PathDefinition, error)
     AddDefinition(definition PathDefinition) error
     RemoveDefinition(defName string) error
@@ -410,7 +410,7 @@ opts := ResolveOptions{}.WithValues(map[ParameterName]string{
     "user_id": "12345",
 })
 
-result, err := resourceManager.PathDefinitionResolver().Resolve(ctx, "user-avatars", &opts)
+result, err := resourceManager.DefinitionResolver().Resolve(ctx, "user-avatars", &opts)
 if err != nil {
     log.Fatal(err)
 }
@@ -435,7 +435,7 @@ opts := ResolveOptions{
     "user_id": "12345",
 })
 
-result, err := resourceManager.PathDefinitionResolver().Resolve(ctx, "user-avatars", &opts)
+result, err := resourceManager.DefinitionResolver().Resolve(ctx, "user-avatars", &opts)
 ```
 
 ### Provider-Specific Resolution
@@ -448,7 +448,7 @@ opts := ResolveOptions{
     "user_id": "12345",
 })
 
-result, err := resourceManager.PathDefinitionResolver().Resolve(ctx, "user-avatars", &opts)
+result, err := resourceManager.DefinitionResolver().Resolve(ctx, "user-avatars", &opts)
 ```
 
 ## Testing

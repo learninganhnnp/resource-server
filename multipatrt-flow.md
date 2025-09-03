@@ -9,7 +9,7 @@ Multipart uploads require a two-stage process where the client interacts with th
 sequenceDiagram
     participant C as Client
     participant S as Server
-    participant R as PathDefinitionResolver
+    participant R as DefinitionResolver
     participant P as Provider (S3/GCS/R2)
 
     Note over C,P: Stage 1: Initialize Multipart Upload
@@ -53,7 +53,7 @@ POST /multipart/init
 ```
 
 ### Server Internal Flow
-1. **Server** calls `PathDefinitionResolver.ResolveReadURL()`
+1. **Server** calls `DefinitionResolver.ResolveReadURL()`
 2. **Server** gets provider-specific init URL
 3. **Server** calls `provider.MultipartProvider.CreateInitMulpartUpload`
 4. **Provider** returns response:
@@ -87,7 +87,7 @@ POST /multipart/urls
 ```
 
 ### Server Internal Flow
-1. **Server** calls `PathURLResolver.ResolveMultipartURLs(path, uploadID, opts)`
+1. **Server** calls `URLResolver.ResolveMultipartURLs(path, uploadID, opts)`
 2. **Server** gets signed URLs from provider
 
 ### Server → Client Response
@@ -124,7 +124,7 @@ POST /multipart/urls
 
 ## Current Resolver Support
 
-The existing `PathDefinitionResolver` and `PathURLResolver` in `resource/resolver.go` already support this flow:
+The existing `DefinitionResolver` and `URLResolver` in `resource/resolver.go` already support this flow:
 
 - `ResolveMultipartInitURL()` - Gets init URL for Stage 1
 - `ResolveMultipartURLs()` - Gets part URLs for Stage 2

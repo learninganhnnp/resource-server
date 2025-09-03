@@ -119,14 +119,19 @@ type UploadRequest struct {
 	Metadata   *UploadMetadata   `json:"metadata,omitempty" validate:"omitempty"`
 }
 
-func (r UploadRequest) To() *resolver.PathDefUploadOpts {
+func (r UploadRequest) To() *resolver.DefinitionUploadOptions {
 	scope := parseScope(r.Scope)
 	params := make(map[resolver.ParameterName]string)
 	for k, v := range r.Parameters {
 		params[resolver.ParameterName(k)] = v
 	}
 
-	return (&resolver.PathDefUploadOpts{}).WithValues(params).WithScope(scope, r.ScopeValue)
+	opts := &resolver.DefinitionUploadOptions{}
+	opts = opts.WithValues(params)
+	if r.Scope != "" {
+		opts = opts.WithScope(scope, r.ScopeValue)
+	}
+	return opts
 }
 
 // parseScope converts string scope to resolver.Scope
@@ -187,8 +192,8 @@ type DownloadRequest struct {
 	ResponseHeaders map[string]string `json:"responseHeaders,omitempty" validate:"omitempty,dive,keys,max=64,endkeys,max=512"`
 }
 
-func (r *DownloadRequest) To() *resolver.PathDownloadOpts {
-	opts := &resolver.PathDownloadOpts{}
+func (r *DownloadRequest) To() *resolver.DownloadOptions {
+	opts := &resolver.DownloadOptions{}
 	if r.Expiry != "" {
 		// Parse expiry duration and set on options
 		// This would need to be implemented based on your duration parsing logic
@@ -322,12 +327,15 @@ type MultipartInitRequest struct {
 	Metadata       *UploadMetadata   `json:"metadata,omitempty"`
 }
 
-func (req MultipartInitRequest) To() *resolver.PathDefDownloadOpts {
-	opts := (&resolver.PathDefDownloadOpts{}).
-		WithProvider(provider.ProviderName(req.Provider))
+func (req MultipartInitRequest) To() *resolver.DefinitionDownloadOptions {
+	opts := &resolver.DefinitionDownloadOptions{}
+	provider := provider.ProviderName(req.Provider)
+	opts.Provider = &provider
 
 	if req.Scope != "" {
-		opts = opts.WithScope(resolver.ScopeType(req.Scope), req.ScopeValue)
+		scope := resolver.ScopeType(req.Scope)
+		opts.Scope = &scope
+		opts.ScopeValue = req.ScopeValue
 	}
 
 	// Add parameters to options
@@ -360,17 +368,19 @@ type MultipartURLsRequest struct {
 	URLOptions []*PartRequest `json:"urlOptions" validate:"required,dive"`
 }
 
-func (req MultipartURLsRequest) To() *resolver.PathMultipartOpts {
+func (req MultipartURLsRequest) To() *resolver.MultipartOptions {
 	var parts = make([]provider.Part, 0, len(req.URLOptions))
 	for _, partReq := range req.URLOptions {
 		parts = append(parts, partReq.To())
 	}
 
-	urlOpts := (&resolver.PathMultipartOpts{
+	urlOpts := &resolver.MultipartOptions{
 		URLOptions: &provider.MultipartURLsOption{
 			Parts: parts,
 		},
-	}).WithProvider(provider.ProviderName(req.Provider))
+	}
+	prov := provider.ProviderName(req.Provider)
+	urlOpts.Provider = &prov
 
 	return urlOpts
 }

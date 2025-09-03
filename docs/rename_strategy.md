@@ -15,8 +15,8 @@ The current name `PathDefinition` suggests only URL/path concerns, but the actua
 
 ## Impact Analysis
 - **Total occurrences found:** 293 PathDefinition references across 16 files
-- **PathDefinitionName occurrences:** 52 across 8 files  
-- **PathDefinitionResolver occurrences:** 39 across 8 files
+- **DefinitionName occurrences:** 52 across 8 files  
+- **DefinitionResolver occurrences:** 39 across 8 files
 - **PathDefinitionRegistry occurrences:** 78 across 7 files
 
 ## Phase 1: Core Type Renaming
@@ -25,13 +25,13 @@ The current name `PathDefinition` suggests only URL/path concerns, but the actua
 ```go
 // Before → After
 PathDefinition → ResourcePolicy
-PathDefinitionName → ResourcePolicyName (or PolicyName)
+DefinitionName → ResourcePolicyName (or PolicyName)
 ```
 
 ### 1.2 Interface Types
 ```go  
 // Before → After
-PathDefinitionResolver → ResourcePolicyResolver
+DefinitionResolver → ResourcePolicyResolver
 PathDefinitionRegistry → ResourcePolicyRegistry
 ```
 
@@ -39,7 +39,7 @@ PathDefinitionRegistry → ResourcePolicyRegistry
 ```go
 // Before → After
 pathDefinition → resourcePolicy
-pathDefinitionResolver → resourcePolicyResolver  
+DefinitionResolver → resourcePolicyResolver  
 definitionRegistry → policyRegistry
 ```
 
@@ -52,10 +52,9 @@ definitionRegistry → policyRegistry
 4. **resource.go** - ResourceManager interface
 
 ### Medium Priority Files (Services)
-5. **upload/service_base.go** - Upload service base
-6. **upload/service_simple.go** - Simple upload service
-7. **upload/service_multipart.go** - Multipart upload service  
-8. **upload/service_facade.go** - Upload facade
+5. **upload/manager_base.go** - Upload manager base
+6. **upload/manager_simple.go** - Simple upload manager
+7. **upload/manager_multipart.go** - Multipart upload service  
 9. **options.go** - ResourceManager options
 
 ### Low Priority Files (Models & Tests)
@@ -70,7 +69,7 @@ definitionRegistry → policyRegistry
 // core/policies.go - Update business definitions
 var (
     AchievementsPolicy = &resource.ResourcePolicy{  // renamed from AchievementsPath
-        Name: resource.PolicyName("achievements"),   // renamed from PathDefinitionName
+        Name: resource.PolicyName("achievements"),   // renamed from DefinitionName
         DisplayName: "Achievement Resources",
         Description: "Achievement icons and metadata shared globally",
         AllowedScopes: []resource.ScopeType{resource.ScopeApp, resource.ScopeGlobal},

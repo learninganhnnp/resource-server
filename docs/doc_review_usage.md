@@ -105,7 +105,7 @@ func main() {
         resource.ResourceFormat: "png",
     })
     
-    result, err := manager.PathDefinitionResolver().Resolve(ctx, "user-avatar", &opts)
+    result, err := manager.DefinitionResolver().Resolve(ctx, "user-avatar", &opts)
     if err != nil {
         panic(err)
     }
@@ -219,7 +219,7 @@ func resolveBasicResource(manager resource.ResourceManager) {
         resource.ResourceID: "avatar_123",
     })
     
-    result, err := manager.PathDefinitionResolver().Resolve(ctx, "user-avatar", &opts)
+    result, err := manager.DefinitionResolver().Resolve(ctx, "user-avatar", &opts)
     if err != nil {
         log.Printf("Failed to resolve resource: %v", err)
         return
@@ -246,7 +246,7 @@ func resolveWithMultipleParams(manager resource.ResourceManager) {
         "difficulty":            "intermediate",
     })
     
-    result, err := manager.PathDefinitionResolver().Resolve(ctx, "workout-video", &opts)
+    result, err := manager.DefinitionResolver().Resolve(ctx, "workout-video", &opts)
     if err != nil {
         log.Printf("Resolution failed: %v", err)
         return
@@ -375,7 +375,7 @@ func generateSignedURL(manager resource.ResourceManager) {
         resource.ResourceID: "secure_document_789",
     })
     
-    result, err := manager.PathDefinitionResolver().Resolve(ctx, "secure-document", &opts)
+    result, err := manager.DefinitionResolver().Resolve(ctx, "secure-document", &opts)
     if err != nil {
         log.Printf("Failed to generate signed URL: %v", err)
         return
@@ -412,7 +412,7 @@ func conditionalSignedURL(manager resource.ResourceManager, isPrivate bool) {
         }(),
     })
     
-    result, err := manager.PathDefinitionResolver().Resolve(ctx, "user-content", &opts)
+    result, err := manager.DefinitionResolver().Resolve(ctx, "user-content", &opts)
     if err != nil {
         log.Printf("Resolution failed: %v", err)
         return
@@ -457,7 +457,7 @@ func resolveWithDynamicExpiry(manager resource.ResourceManager, contentType stri
         "content_type":      contentType,
     })
     
-    result, err := manager.PathDefinitionResolver().Resolve(ctx, "dynamic-content", &opts)
+    result, err := manager.DefinitionResolver().Resolve(ctx, "dynamic-content", &opts)
     if err != nil {
         log.Printf("Failed to resolve: %v", err)
         return
@@ -483,7 +483,7 @@ func resolveWithSpecificProvider(manager resource.ResourceManager) {
             resource.Version:    "1.0.0",
         })
     
-    result, err := manager.PathDefinitionResolver().Resolve(ctx, "backup-file", &opts)
+    result, err := manager.DefinitionResolver().Resolve(ctx, "backup-file", &opts)
     if err != nil {
         log.Printf("Failed to resolve with GCS: %v", err)
         return
@@ -507,7 +507,7 @@ func resolveByURLType(manager resource.ResourceManager) {
             resource.ResourceID: "image_123",
         })
     
-    contentResult, err := manager.PathDefinitionResolver().Resolve(ctx, "user-image", &contentOpts)
+    contentResult, err := manager.DefinitionResolver().Resolve(ctx, "user-image", &contentOpts)
     if err != nil {
         log.Printf("Content resolution failed: %v", err)
         return
@@ -520,7 +520,7 @@ func resolveByURLType(manager resource.ResourceManager) {
             resource.ResourceID: "image_123",
         })
     
-    operationResult, err := manager.PathDefinitionResolver().Resolve(ctx, "user-image", &operationOpts)
+    operationResult, err := manager.DefinitionResolver().Resolve(ctx, "user-image", &operationOpts)
     if err != nil {
         log.Printf("Operation resolution failed: %v", err)
         return
@@ -544,7 +544,7 @@ func resolveWithFallback(manager resource.ResourceManager) {
             resource.ResourceID: "critical_asset_123",
         })
     
-    result, err := manager.PathDefinitionResolver().Resolve(ctx, "critical-asset", &primaryOpts)
+    result, err := manager.DefinitionResolver().Resolve(ctx, "critical-asset", &primaryOpts)
     if err != nil {
         log.Printf("Primary provider failed, trying fallback: %v", err)
         
@@ -555,7 +555,7 @@ func resolveWithFallback(manager resource.ResourceManager) {
                 resource.ResourceID: "critical_asset_123",
             })
         
-        result, err = manager.PathDefinitionResolver().Resolve(ctx, "critical-asset", &fallbackOpts)
+        result, err = manager.DefinitionResolver().Resolve(ctx, "critical-asset", &fallbackOpts)
         if err != nil {
             log.Printf("Fallback also failed: %v", err)
             return
@@ -587,7 +587,7 @@ func resolveWithAutomaticScope(manager resource.ResourceManager) {
         resource.ResourceID: "feature_config_123",
     })
     
-    result, err := manager.PathDefinitionResolver().Resolve(ctx, "app-config", &opts)
+    result, err := manager.DefinitionResolver().Resolve(ctx, "app-config", &opts)
     if err != nil {
         log.Printf("Scope resolution failed: %v", err)
         return
@@ -612,7 +612,7 @@ func resolveWithExplicitScope(manager resource.ResourceManager) {
         resource.ResourceID: "shared_achievement_badge",
     })
     
-    globalResult, err := manager.PathDefinitionResolver().Resolve(ctx, "achievement-badge", &globalOpts)
+    globalResult, err := manager.DefinitionResolver().Resolve(ctx, "achievement-badge", &globalOpts)
     if err != nil {
         log.Printf("Global scope resolution failed: %v", err)
         return
@@ -627,7 +627,7 @@ func resolveWithExplicitScope(manager resource.ResourceManager) {
         resource.App:        "bike",
     })
     
-    appResult, err := manager.PathDefinitionResolver().Resolve(ctx, "app-config", &appOpts)
+    appResult, err := manager.DefinitionResolver().Resolve(ctx, "app-config", &appOpts)
     if err != nil {
         log.Printf("App scope resolution failed: %v", err)
         return
@@ -652,7 +652,7 @@ func validateScopeAccess(manager resource.ResourceManager) {
         resource.ResourceID: "user_preferences",
     })
     
-    result, err := manager.PathDefinitionResolver().Resolve(ctx, "user-preferences", &opts)
+    result, err := manager.DefinitionResolver().Resolve(ctx, "user-preferences", &opts)
     if err != nil {
         // Should fail because no ClientApp context is available
         fmt.Printf("Expected error for invalid scope: %v\n", err)
@@ -663,7 +663,7 @@ func validateScopeAccess(manager resource.ResourceManager) {
             Version:     "2.0.0",
         })
         
-        result, err = manager.PathDefinitionResolver().Resolve(ctx, "user-preferences", &opts)
+        result, err = manager.DefinitionResolver().Resolve(ctx, "user-preferences", &opts)
         if err != nil {
             log.Printf("Still failed with context: %v", err)
             return
@@ -998,7 +998,7 @@ func useSmartTemplateResolver(manager resource.ResourceManager) {
         ParamResolver: smartResolver,
     }
     
-    result, err := manager.PathDefinitionResolver().Resolve(ctx, "user-export", &opts)
+    result, err := manager.DefinitionResolver().Resolve(ctx, "user-export", &opts)
     if err != nil {
         log.Printf("Smart resolution failed: %v", err)
         return
@@ -1067,7 +1067,7 @@ func handleResolutionErrors(manager resource.ResourceManager) {
     for _, tc := range testCases {
         fmt.Printf("Testing: %s\n", tc.name)
         
-        result, err := manager.PathDefinitionResolver().Resolve(ctx, tc.defName, tc.opts)
+        result, err := manager.DefinitionResolver().Resolve(ctx, tc.defName, tc.opts)
         
         if tc.expectErr {
             if err == nil {
@@ -1114,7 +1114,7 @@ func demonstrateErrorRecovery(manager resource.ResourceManager) {
                 resource.ResourceID: resourceID,
             })
         
-        result, err := manager.PathDefinitionResolver().Resolve(ctx, "critical-asset", &opts)
+        result, err := manager.DefinitionResolver().Resolve(ctx, "critical-asset", &opts)
         if err == nil {
             fmt.Printf("Success with provider %s: %s\n", providerName, result.URL)
             return
@@ -1137,7 +1137,7 @@ func demonstrateErrorRecovery(manager resource.ResourceManager) {
             resource.ResourceID: resourceID,
         })
         
-        result, err := manager.PathDefinitionResolver().Resolve(ctx, "flexible-asset", &opts)
+        result, err := manager.DefinitionResolver().Resolve(ctx, "flexible-asset", &opts)
         if err == nil {
             fmt.Printf("Success with scope %s: %s\n", *scope, result.URL)
             return
@@ -1154,7 +1154,7 @@ func demonstrateErrorRecovery(manager resource.ResourceManager) {
     }
     
     opts := resource.ResolveOptions{}.WithValues(fallbackParams)
-    result, err := manager.PathDefinitionResolver().Resolve(ctx, "default-asset", &opts)
+    result, err := manager.DefinitionResolver().Resolve(ctx, "default-asset", &opts)
     if err == nil {
         fmt.Printf("Fallback success: %s\n", result.URL)
     } else {
@@ -1174,7 +1174,7 @@ func logResourceErrors(manager resource.ResourceManager, logger *log.Logger) {
         resource.ResourceID: "",
     })
     
-    result, err := manager.PathDefinitionResolver().Resolve(ctx, "user-avatar", &opts)
+    result, err := manager.DefinitionResolver().Resolve(ctx, "user-avatar", &opts)
     if err != nil {
         // Log structured error information
         var anerr *anerror.Error
@@ -1229,7 +1229,7 @@ func (c *CachedResourceManager) Resolve(ctx context.Context, defName string, opt
     c.mutex.RUnlock()
     
     // Resolve using underlying manager
-    result, err := c.manager.PathDefinitionResolver().Resolve(ctx, defName, opts)
+    result, err := c.manager.DefinitionResolver().Resolve(ctx, defName, opts)
     if err != nil {
         return nil, err
     }
@@ -1276,15 +1276,15 @@ func (c *CachedResourceManager) createCacheKey(defName string, opts *resource.Re
 ### Resource Resolution Middleware
 
 ```go
-type ResolutionMiddleware func(resource.PathDefinitionResolver) resource.PathDefinitionResolver
+type ResolutionMiddleware func(resource.DefinitionResolver) resource.DefinitionResolver
 
 type LoggingMiddleware struct {
     logger *log.Logger
-    next   resource.PathDefinitionResolver
+    next   resource.DefinitionResolver
 }
 
 func NewLoggingMiddleware(logger *log.Logger) ResolutionMiddleware {
-    return func(next resource.PathDefinitionResolver) resource.PathDefinitionResolver {
+    return func(next resource.DefinitionResolver) resource.DefinitionResolver {
         return &LoggingMiddleware{
             logger: logger,
             next:   next,
@@ -1312,13 +1312,13 @@ func (m *LoggingMiddleware) Resolve(ctx context.Context, defName string, opts *r
 
 // Metrics middleware
 type MetricsMiddleware struct {
-    next    resource.PathDefinitionResolver
+    next    resource.DefinitionResolver
     metrics map[string]int
     mutex   sync.RWMutex
 }
 
 func NewMetricsMiddleware() ResolutionMiddleware {
-    return func(next resource.PathDefinitionResolver) resource.PathDefinitionResolver {
+    return func(next resource.DefinitionResolver) resource.DefinitionResolver {
         return &MetricsMiddleware{
             next:    next,
             metrics: make(map[string]int),
@@ -1352,7 +1352,7 @@ func (m *MetricsMiddleware) GetMetrics() map[string]int {
 }
 
 // Usage
-func useMiddleware(baseResolver resource.PathDefinitionResolver, logger *log.Logger) resource.PathDefinitionResolver {
+func useMiddleware(baseResolver resource.DefinitionResolver, logger *log.Logger) resource.DefinitionResolver {
     // Chain middleware
     resolver := baseResolver
     resolver = NewMetricsMiddleware()(resolver)
@@ -1417,7 +1417,7 @@ func batchResolveResources(manager resource.ResourceManager) {
             DefName string
             Opts   *resource.ResolveOptions
         }) {
-            resource, err := manager.PathDefinitionResolver().Resolve(ctx, r.DefName, r.Opts)
+            resource, err := manager.DefinitionResolver().Resolve(ctx, r.DefName, r.Opts)
             resultChan <- result{
                 Name:     r.Name,
                 Resource: resource,
@@ -1479,7 +1479,7 @@ func createResourceHandler(manager resource.ResourceManager) http.HandlerFunc {
         }
         
         // Resolve resource
-        result, err := manager.PathDefinitionResolver().Resolve(ctx, defName, &opts)
+        result, err := manager.DefinitionResolver().Resolve(ctx, defName, &opts)
         if err != nil {
             var anerr *anerror.Error
             if errors.As(err, &anerr) {
@@ -1559,7 +1559,7 @@ func (r *ResourceResolver) ResolveResource(ctx context.Context, args struct {
     }
     
     // Resolve
-    result, err := r.manager.PathDefinitionResolver().Resolve(ctx, args.Definition, &opts)
+    result, err := r.manager.DefinitionResolver().Resolve(ctx, args.Definition, &opts)
     if err != nil {
         return nil, err
     }
@@ -1607,7 +1607,7 @@ func (s *ResourceService) ResolveResource(ctx context.Context, req *pb.ResolveRe
     }
     
     // Resolve
-    result, err := s.manager.PathDefinitionResolver().Resolve(ctx, req.Definition, &opts)
+    result, err := s.manager.DefinitionResolver().Resolve(ctx, req.Definition, &opts)
     if err != nil {
         return nil, status.Errorf(codes.Internal, "Failed to resolve resource: %v", err)
     }
@@ -1668,7 +1668,7 @@ func TestResourceResolution(t *testing.T) {
             ctx := context.Background()
             opts := resource.ResolveOptions{}.WithValues(tt.params)
             
-            result, err := manager.PathDefinitionResolver().Resolve(ctx, tt.definition, &opts)
+            result, err := manager.DefinitionResolver().Resolve(ctx, tt.definition, &opts)
             
             if tt.expectError {
                 assert.Error(t, err)
@@ -1754,7 +1754,7 @@ func TestResourceIntegration(t *testing.T) {
                 resource.ResourceID: "integration_test_image",
             })
         
-        result, err := manager.PathDefinitionResolver().Resolve(ctx, "test-image", &opts)
+        result, err := manager.DefinitionResolver().Resolve(ctx, "test-image", &opts)
         require.NoError(t, err)
         
         // Verify URL is accessible
@@ -1776,7 +1776,7 @@ func TestResourceIntegration(t *testing.T) {
             resource.ResourceID: "temp_test_file",
         })
         
-        result, err := manager.PathDefinitionResolver().Resolve(ctx, "temp-file", &opts)
+        result, err := manager.DefinitionResolver().Resolve(ctx, "temp-file", &opts)
         require.NoError(t, err)
         
         // URL should work immediately
@@ -1811,7 +1811,7 @@ func BenchmarkResourceResolution(b *testing.B) {
     b.ResetTimer()
     
     for i := 0; i < b.N; i++ {
-        _, err := manager.PathDefinitionResolver().Resolve(ctx, "benchmark-resource", &opts)
+        _, err := manager.DefinitionResolver().Resolve(ctx, "benchmark-resource", &opts)
         if err != nil {
             b.Fatal(err)
         }
@@ -1829,7 +1829,7 @@ func BenchmarkConcurrentResolution(b *testing.B) {
                 resource.ResourceID: fmt.Sprintf("resource_%d", i),
             })
             
-            _, err := manager.PathDefinitionResolver().Resolve(ctx, "benchmark-resource", &opts)
+            _, err := manager.DefinitionResolver().Resolve(ctx, "benchmark-resource", &opts)
             if err != nil {
                 b.Fatal(err)
             }

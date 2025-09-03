@@ -44,7 +44,7 @@ func (uc *FileOperationsUseCase) ListFiles(ctx context.Context, req *dto.ListFil
 // GenerateUploadURL generates a signed URL for file upload
 func (uc *FileOperationsUseCase) GenerateUploadURL(ctx context.Context, req *dto.GenerateUploadURLRequest) (*dto.SignedURLResponse, error) {
 	opts := req.Upload.To()
-	signedURL, err := uc.manager.PathDefinitionResolver().ResolveUploadURL(ctx, resolver.PathDefinitionName(req.Definition), opts)
+	signedURL, err := uc.manager.DefinitionResolver().ResolveUploadURL(ctx, resolver.DefinitionName(req.Definition), opts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate upload URL: %w", err)
 	}
@@ -54,11 +54,11 @@ func (uc *FileOperationsUseCase) GenerateUploadURL(ctx context.Context, req *dto
 
 // GenerateDownloadURL generates a signed URL for file download
 func (uc *FileOperationsUseCase) GenerateDownloadURL(ctx context.Context, req *dto.GenerateDownloadURLRequest) (*dto.SignedURLResponse, error) {
-	var opts *resolver.PathDownloadOpts
+	var opts *resolver.DownloadOptions
 	if req.Download != nil {
 		opts = req.Download.To()
 	}
-	signedURL, err := uc.manager.PathURLResolver().ResolveDownloadURL(ctx, req.FilePath, opts)
+	signedURL, err := uc.manager.URLResolver().ResolveDownloadURL(ctx, req.FilePath, opts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate download URL: %w", err)
 	}

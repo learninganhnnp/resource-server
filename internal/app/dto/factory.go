@@ -9,8 +9,8 @@ import (
 	"avironactive.com/resource/resolver"
 )
 
-// NewPathDefinitionResponse creates PathDefinitionResponse from resolver.PathDefinition
-func NewPathDefinitionResponse(def resolver.PathDefinition) PathDefinitionResponse {
+// NewPathDefinitionResponse creates PathDefinitionResponse from resolver.Definition
+func NewPathDefinitionResponse(def resolver.Definition) PathDefinitionResponse {
 	parameters := make([]PathParameterResponse, 0, len(def.Parameters))
 	for _, param := range def.Parameters {
 		// Convert validation.Rule slice to string slice

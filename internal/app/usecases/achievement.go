@@ -41,7 +41,8 @@ func (uc *AchievementUseCase) CreateAchievement(ctx context.Context, req *dto.Cr
 	var uploadResponse *dto.UploadInfo
 	var iconURL string
 	if req.IconFormat != "" {
-		opts := (&resolver.PathDefDownloadOpts{}).
+		opts := &resolver.DefinitionDownloadOptions{}
+		opts = opts.
 			WithProvider(provider.ProviderName(req.Provider)).
 			WithScope(resolver.ScopeGlobal, 0).
 			WithValues(map[resolver.ParameterName]string{
@@ -49,9 +50,9 @@ func (uc *AchievementUseCase) CreateAchievement(ctx context.Context, req *dto.Cr
 				"format":         req.IconFormat,
 			})
 
-		pathResult, err := uc.resourceManager.PathDefinitionResolver().ResolveDownloadURL(
+		pathResult, err := uc.resourceManager.DefinitionResolver().ResolveDownloadURL(
 			ctx,
-			resolver.PathDefinitionName("achievement"),
+			resolver.DefinitionName("achievement"),
 			opts,
 		)
 		if err != nil {
@@ -128,7 +129,7 @@ func (uc *AchievementUseCase) GetAchievement(ctx context.Context, id string) (*d
 
 	response := dto.NewAchievementResponse(achievement)
 	if achievement.IconPath != "" {
-		resolved, err := uc.resourceManager.PathURLResolver().ResolveDownloadURL(ctx, achievement.IconPath, nil)
+		resolved, err := uc.resourceManager.URLResolver().ResolveDownloadURL(ctx, achievement.IconPath, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -136,7 +137,7 @@ func (uc *AchievementUseCase) GetAchievement(ctx context.Context, id string) (*d
 		response.IconURL = resolved.ObjectURL.URL
 	}
 	if achievement.BannerPath != "" {
-		resolved, err := uc.resourceManager.PathURLResolver().ResolveDownloadURL(ctx, achievement.BannerPath, nil)
+		resolved, err := uc.resourceManager.URLResolver().ResolveDownloadURL(ctx, achievement.BannerPath, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -160,7 +161,7 @@ func (uc *AchievementUseCase) UpdateAchievementIcon(ctx context.Context, req *dt
 
 	oldIconPath := achievement.IconPath
 
-	opts := (&resolver.PathDefDownloadOpts{}).
+	opts := (&resolver.DefinitionDownloadOptions{}).
 		WithProvider(provider.ProviderName(req.Provider)).
 		WithScope(resolver.ScopeGlobal, 0).
 		WithValues(map[resolver.ParameterName]string{
@@ -168,9 +169,9 @@ func (uc *AchievementUseCase) UpdateAchievementIcon(ctx context.Context, req *dt
 			"format":         req.Format,
 		})
 
-	pathResult, err := uc.resourceManager.PathDefinitionResolver().ResolveDownloadURL(
+	pathResult, err := uc.resourceManager.DefinitionResolver().ResolveDownloadURL(
 		ctx,
-		resolver.PathDefinitionName("achievement"),
+		resolver.DefinitionName("achievement"),
 		opts,
 	)
 	if err != nil {
@@ -247,7 +248,7 @@ func (uc *AchievementUseCase) UpdateAchievementIcon(ctx context.Context, req *dt
 		return nil, fmt.Errorf("failed to get upload URL: %w", err)
 	}
 
-	newIconResolved, err := uc.resourceManager.PathURLResolver().ResolveDownloadURL(ctx, newIconPath, nil)
+	newIconResolved, err := uc.resourceManager.URLResolver().ResolveDownloadURL(ctx, newIconPath, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -289,7 +290,7 @@ func (uc *AchievementUseCase) ConfirmUpload(ctx context.Context, req *dto.Confir
 		}
 	}
 
-	return uc.uploadManager.ConfirmSimpleUpload(ctx, upload.UploadID(uploadID), confirmation)
+	return uc.uploadManager.ConfirmUpload(ctx, upload.UploadID(uploadID), confirmation)
 }
 
 func (uc *AchievementUseCase) ListAchievements(ctx context.Context, offset, limit int) ([]*dto.AchievementResponse, error) {
@@ -302,7 +303,7 @@ func (uc *AchievementUseCase) ListAchievements(ctx context.Context, offset, limi
 	for i, achievement := range achievements {
 		result[i] = dto.NewAchievementResponse(achievement)
 		if achievement.IconPath != "" {
-			resolved, err := uc.resourceManager.PathURLResolver().ResolveDownloadURL(ctx, achievement.IconPath, nil)
+			resolved, err := uc.resourceManager.URLResolver().ResolveDownloadURL(ctx, achievement.IconPath, nil)
 			if err != nil {
 				return nil, err
 			}
@@ -310,7 +311,7 @@ func (uc *AchievementUseCase) ListAchievements(ctx context.Context, offset, limi
 			result[i].IconURL = resolved.ObjectURL.URL
 		}
 		if achievement.BannerPath != "" {
-			resolved, err := uc.resourceManager.PathURLResolver().ResolveDownloadURL(ctx, achievement.BannerPath, nil)
+			resolved, err := uc.resourceManager.URLResolver().ResolveDownloadURL(ctx, achievement.BannerPath, nil)
 			if err != nil {
 				return nil, err
 			}
@@ -332,7 +333,7 @@ func (uc *AchievementUseCase) ListActiveAchievements(ctx context.Context, offset
 	for i, achievement := range achievements {
 		result[i] = dto.NewAchievementResponse(achievement)
 		if achievement.IconPath != "" {
-			resolved, err := uc.resourceManager.PathURLResolver().ResolveDownloadURL(ctx, achievement.IconPath, nil)
+			resolved, err := uc.resourceManager.URLResolver().ResolveDownloadURL(ctx, achievement.IconPath, nil)
 			if err != nil {
 				return nil, err
 			}
@@ -340,7 +341,7 @@ func (uc *AchievementUseCase) ListActiveAchievements(ctx context.Context, offset
 			result[i].IconURL = resolved.ObjectURL.URL
 		}
 		if achievement.BannerPath != "" {
-			resolved, err := uc.resourceManager.PathURLResolver().ResolveDownloadURL(ctx, achievement.BannerPath, nil)
+			resolved, err := uc.resourceManager.URLResolver().ResolveDownloadURL(ctx, achievement.BannerPath, nil)
 			if err != nil {
 				return nil, err
 			}

@@ -86,7 +86,7 @@ manager.AddDefinition(PathDefinition{
 
 ```go
 // Resolve user avatar with default provider (CDN for content)
-result, err := manager.PathDefinitionResolver().Resolve(ctx, "user-avatars", &ResolveOptions{
+result, err := manager.DefinitionResolver().Resolve(ctx, "user-avatars", &ResolveOptions{
     ParamResolver: NewValuesParameterResolver(map[ParameterName]string{
         "user_id": "12345",
     }),
@@ -106,7 +106,7 @@ fmt.Printf("Avatar URL: %s\n", result.URL)
 ```go
 // Force use of GCS provider instead of default CDN
 gcsProvider := provider.ProviderGCS
-result, err := manager.PathDefinitionResolver().Resolve(ctx, "user-avatars", &ResolveOptions{
+result, err := manager.DefinitionResolver().Resolve(ctx, "user-avatars", &ResolveOptions{
     Provider: &gcsProvider,
     ParamResolver: NewValuesParameterResolver(map[ParameterName]string{
         "user_id": "12345",
@@ -124,7 +124,7 @@ fmt.Printf("GCS URL: %s\n", result.URL)
 ```go
 // Content URL (optimized for delivery - uses CDN)
 contentURLType := URLTypeContent
-contentResult, err := manager.PathDefinitionResolver().Resolve(ctx, "achievements", &ResolveOptions{
+contentResult, err := manager.DefinitionResolver().Resolve(ctx, "achievements", &ResolveOptions{
     URLType: &contentURLType,
     ParamResolver: NewValuesParameterResolver(map[ParameterName]string{
         "achievement_id": "gold_medal",
@@ -134,7 +134,7 @@ contentResult, err := manager.PathDefinitionResolver().Resolve(ctx, "achievement
 
 // Operation URL (for management - uses GCS)
 operationURLType := URLTypeOperation
-operationResult, err := manager.PathDefinitionResolver().Resolve(ctx, "achievements", &ResolveOptions{
+operationResult, err := manager.DefinitionResolver().Resolve(ctx, "achievements", &ResolveOptions{
     URLType: &operationURLType,
     ParamResolver: NewValuesParameterResolver(map[ParameterName]string{
         "achievement_id": "gold_medal",
@@ -152,7 +152,7 @@ fmt.Printf("Operation URL: %s\n", operationResult.URL)
 
 ```go
 // Generate signed URL with default expiry
-result, err := manager.PathDefinitionResolver().Resolve(ctx, "user-avatars", &ResolveOptions{
+result, err := manager.DefinitionResolver().Resolve(ctx, "user-avatars", &ResolveOptions{
     URLOptions: &provider.URLOptions{
         SignedURL: true,
     },
@@ -168,7 +168,7 @@ fmt.Printf("Signed URL: %s\n", result.URL)
 
 ```go
 // Generate signed URL with custom expiry
-result, err := manager.PathDefinitionResolver().Resolve(ctx, "user-avatars", &ResolveOptions{
+result, err := manager.DefinitionResolver().Resolve(ctx, "user-avatars", &ResolveOptions{
     URLOptions: &provider.URLOptions{
         SignedURL:    true,
         SignedExpiry: 2 * time.Hour, // Expires in 2 hours
@@ -185,7 +185,7 @@ fmt.Printf("2-Hour Signed URL: %s\n", result.URL)
 
 ```go
 // Short expiry for admin operations (5 minutes)
-adminResult, err := manager.PathDefinitionResolver().Resolve(ctx, "user-avatars", &ResolveOptions{
+adminResult, err := manager.DefinitionResolver().Resolve(ctx, "user-avatars", &ResolveOptions{
     URLOptions: &provider.URLOptions{
         SignedURL:    true,
         SignedExpiry: 5 * time.Minute,
@@ -196,7 +196,7 @@ adminResult, err := manager.PathDefinitionResolver().Resolve(ctx, "user-avatars"
 })
 
 // Long expiry for premium users (24 hours)
-premiumResult, err := manager.PathDefinitionResolver().Resolve(ctx, "user-avatars", &ResolveOptions{
+premiumResult, err := manager.DefinitionResolver().Resolve(ctx, "user-avatars", &ResolveOptions{
     URLOptions: &provider.URLOptions{
         SignedURL:    true,
         SignedExpiry: 24 * time.Hour,
@@ -207,7 +207,7 @@ premiumResult, err := manager.PathDefinitionResolver().Resolve(ctx, "user-avatar
 })
 
 // Medium expiry for sharing (2 hours)
-shareResult, err := manager.PathDefinitionResolver().Resolve(ctx, "user-avatars", &ResolveOptions{
+shareResult, err := manager.DefinitionResolver().Resolve(ctx, "user-avatars", &ResolveOptions{
     URLOptions: &provider.URLOptions{
         SignedURL:    true,
         SignedExpiry: 2 * time.Hour,
@@ -225,7 +225,7 @@ shareResult, err := manager.PathDefinitionResolver().Resolve(ctx, "user-avatars"
 ```go
 // Global scope (shared across all apps)
 globalScope := ScopeGlobal
-globalResult, err := manager.PathDefinitionResolver().Resolve(ctx, "achievements", &ResolveOptions{
+globalResult, err := manager.DefinitionResolver().Resolve(ctx, "achievements", &ResolveOptions{
     Scope: &globalScope,
     ParamResolver: NewValuesParameterResolver(map[ParameterName]string{
         "achievement_id": "grand_master",
@@ -235,7 +235,7 @@ globalResult, err := manager.PathDefinitionResolver().Resolve(ctx, "achievements
 
 // App-specific scope
 appScope := ScopeApp
-bikeResult, err := manager.PathDefinitionResolver().Resolve(ctx, "achievements", &ResolveOptions{
+bikeResult, err := manager.DefinitionResolver().Resolve(ctx, "achievements", &ResolveOptions{
     Scope: &appScope,
     ParamResolver: NewValuesParameterResolver(map[ParameterName]string{
         "app":            "bike",
@@ -258,7 +258,7 @@ gcsProvider := provider.ProviderGCS
 operationURLType := URLTypeOperation
 appScope := ScopeApp
 
-result, err := manager.PathDefinitionResolver().Resolve(ctx, "achievements", &ResolveOptions{
+result, err := manager.DefinitionResolver().Resolve(ctx, "achievements", &ResolveOptions{
     Provider: &gcsProvider,
     URLType:  &operationURLType,
     Scope:    &appScope,
@@ -283,7 +283,7 @@ fmt.Printf("Complex URL: %s\n", result.URL)
 
 ```go
 // Using WithValues helper
-result, err := manager.PathDefinitionResolver().Resolve(ctx, "user-avatars",
+result, err := manager.DefinitionResolver().Resolve(ctx, "user-avatars",
     ResolveOptions{}.WithValues(map[ParameterName]string{
         "user_id": "fluent_user",
     }))
@@ -293,7 +293,7 @@ result, err := manager.PathDefinitionResolver().Resolve(ctx, "user-avatars",
 
 ```go
 // Chaining multiple options
-result, err := manager.PathDefinitionResolver().Resolve(ctx, "achievements",
+result, err := manager.DefinitionResolver().Resolve(ctx, "achievements",
     ResolveOptions{}.
         WithValues(map[ParameterName]string{
             "achievement_id": "diamond_medal",
@@ -318,12 +318,12 @@ baseSecureOptions := ResolveOptions{}.
     })
 
 // Use base options with specific parameters
-userResult, err := manager.PathDefinitionResolver().Resolve(ctx, "user-avatars",
+userResult, err := manager.DefinitionResolver().Resolve(ctx, "user-avatars",
     baseSecureOptions.WithValues(map[ParameterName]string{
         "user_id": "secure_user_1",
     }))
 
-adminResult, err := manager.PathDefinitionResolver().Resolve(ctx, "user-avatars",
+adminResult, err := manager.DefinitionResolver().Resolve(ctx, "user-avatars",
     baseSecureOptions.
         WithProvider(provider.ProviderGCS).
         WithValues(map[ParameterName]string{
@@ -337,7 +337,7 @@ adminResult, err := manager.PathDefinitionResolver().Resolve(ctx, "user-avatars"
 
 ```go
 // Handle missing required parameters
-result, err := manager.PathDefinitionResolver().Resolve(ctx, "user-avatars", &ResolveOptions{
+result, err := manager.DefinitionResolver().Resolve(ctx, "user-avatars", &ResolveOptions{
     ParamResolver: NewValuesParameterResolver(map[ParameterName]string{}), // Empty
 })
 if err != nil {
@@ -349,7 +349,7 @@ if err != nil {
 
 // Handle invalid scope
 invalidScope := ScopeApp // user-avatars only supports global
-result, err = manager.PathDefinitionResolver().Resolve(ctx, "user-avatars", &ResolveOptions{
+result, err = manager.DefinitionResolver().Resolve(ctx, "user-avatars", &ResolveOptions{
     Scope: &invalidScope,
     ParamResolver: NewValuesParameterResolver(map[ParameterName]string{
         "user_id": "test_user",
@@ -363,7 +363,7 @@ if err != nil {
 }
 
 // Handle non-existent resource
-result, err = manager.PathDefinitionResolver().Resolve(ctx, "non-existent", &ResolveOptions{
+result, err = manager.DefinitionResolver().Resolve(ctx, "non-existent", &ResolveOptions{
     ParamResolver: NewValuesParameterResolver(map[ParameterName]string{
         "param": "value",
     }),
@@ -380,10 +380,10 @@ if err != nil {
 
 ```go
 // Try specific provider, fallback to default
-func getResourceURL(ctx context.Context, manager ResourceManager, resourceName PathDefinitionName, params map[ParameterName]string) (string, error) {
+func getResourceURL(ctx context.Context, manager ResourceManager, resourceName DefinitionName, params map[ParameterName]string) (string, error) {
     // First try with preferred provider
     gcsProvider := provider.ProviderGCS
-    result, err := manager.PathDefinitionResolver().Resolve(ctx, resourceName, &ResolveOptions{
+    result, err := manager.DefinitionResolver().Resolve(ctx, resourceName, &ResolveOptions{
         Provider: &gcsProvider,
         ParamResolver: NewValuesParameterResolver(params),
     })
@@ -392,7 +392,7 @@ func getResourceURL(ctx context.Context, manager ResourceManager, resourceName P
     }
 
     // Fallback to default provider
-    result, err = manager.PathDefinitionResolver().Resolve(ctx, resourceName, &ResolveOptions{
+    result, err = manager.DefinitionResolver().Resolve(ctx, resourceName, &ResolveOptions{
         ParamResolver: NewValuesParameterResolver(params),
     })
     if err != nil {
@@ -411,7 +411,7 @@ func getResourceURL(ctx context.Context, manager ResourceManager, resourceName P
 // Don't create new options for every request
 // ❌ Bad
 func getUserAvatar(userID string) string {
-    result, _ := manager.PathDefinitionResolver().Resolve(ctx, "user-avatars", &ResolveOptions{
+    result, _ := manager.DefinitionResolver().Resolve(ctx, "user-avatars", &ResolveOptions{
         URLOptions: &provider.URLOptions{SignedURL: true, SignedExpiry: 1 * time.Hour},
         ParamResolver: NewValuesParameterResolver(map[ParameterName]string{"user_id": userID}),
     })
@@ -430,7 +430,7 @@ func getUserAvatar(userID string) string {
     opts := *baseSecureOptions // Copy struct
     opts.ParamResolver = NewValuesParameterResolver(map[ParameterName]string{"user_id": userID})
     
-    result, _ := manager.PathDefinitionResolver().Resolve(ctx, "user-avatars", &opts)
+    result, _ := manager.DefinitionResolver().Resolve(ctx, "user-avatars", &opts)
     return result.URL
 }
 ```
@@ -454,7 +454,7 @@ func processUserBatch(userIDs []string) []string {
             "user_id": userID,
         })
 
-        result, err := manager.PathDefinitionResolver().Resolve(ctx, "user-avatars", &opts)
+        result, err := manager.DefinitionResolver().Resolve(ctx, "user-avatars", &opts)
         if err != nil {
             log.Printf("Failed to process user %s: %v", userID, err)
             continue
@@ -495,7 +495,7 @@ func (s *UserService) GetUserAvatarURL(userID string) (string, error) {
         "user_id": userID,
     })
 
-    result, err := s.resourceManager.PathDefinitionResolver().Resolve(context.Background(), "user-avatars", &opts)
+    result, err := s.resourceManager.DefinitionResolver().Resolve(context.Background(), "user-avatars", &opts)
     if err != nil {
         return "", err
     }

@@ -34,7 +34,7 @@ func (uc *ResourceDefinitionUseCase) ListDefinitions(ctx context.Context) ([]*dt
 
 // GetDefinition returns a specific resource definition by name
 func (uc *ResourceDefinitionUseCase) GetDefinition(ctx context.Context, name string) (*dto.PathDefinitionResponse, error) {
-	def, err := uc.manager.GetDefinition(resolver.PathDefinitionName(name))
+	def, err := uc.manager.GetDefinition(resolver.DefinitionName(name))
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func convertParameters(params []*resolver.ParameterDefinition) []dto.PathParamet
 	return result
 }
 
-func convertDefinitionPath(def *resolver.PathDefinition) *dto.PathDefinitionResponse {
+func convertDefinitionPath(def *resolver.Definition) *dto.PathDefinitionResponse {
 	providers := make([]string, 0, len(def.Patterns))
 	for p := range def.Patterns {
 		providers = append(providers, string(p))

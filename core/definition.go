@@ -13,20 +13,20 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func AllDefinitions() []*resolver.PathDefinition {
-	return []*resolver.PathDefinition{
+func AllDefinitions() []*resolver.Definition {
+	return []*resolver.Definition{
 		AchievementsPath,
 		WorkoutsPath,
 	}
 }
 
 var (
-	AchievementsPathName = resolver.PathDefinitionName("achievements")
-	AchievementPathName  = resolver.PathDefinitionName("achievement")
-	WorkoutsPathName     = resolver.PathDefinitionName("workouts")
-	WorkoutPathName      = resolver.PathDefinitionName("workout")
+	AchievementsPathName = resolver.DefinitionName("achievements")
+	AchievementPathName  = resolver.DefinitionName("achievement")
+	WorkoutsPathName     = resolver.DefinitionName("workouts")
+	WorkoutPathName      = resolver.DefinitionName("workout")
 
-	AchievementsPath = (&resolver.PathDefinition{
+	AchievementsPath = (&resolver.Definition{
 		Name:          AchievementsPathName,
 		DisplayName:   "Achievement Resources",
 		Description:   "Achievement icons and metadata shared globally",
@@ -50,7 +50,7 @@ var (
 		Parameters: []*resolver.ParameterDefinition{
 			{Name: "app", Description: "Application name (bike, rower) - required for app scope"},
 		},
-	}).WithChildren(&resolver.PathDefinition{
+	}).WithChildren(&resolver.Definition{
 		Name:        AchievementPathName,
 		DisplayName: "Achievement Resource",
 		Description: "Resource for a specific achievement",
@@ -77,7 +77,7 @@ var (
 		},
 	})
 
-	WorkoutsPath = (&resolver.PathDefinition{
+	WorkoutsPath = (&resolver.Definition{
 		Name:          WorkoutsPathName,
 		DisplayName:   "Workout Resources",
 		Description:   "Workout files shared globally",
@@ -112,7 +112,7 @@ var (
 				"x-aviron-private": "true",
 			},
 		},
-	}).WithChildren(&resolver.PathDefinition{
+	}).WithChildren(&resolver.Definition{
 		Name:        WorkoutPathName,
 		DisplayName: "Workout Resource",
 		Description: "Resource for a specific workout file",

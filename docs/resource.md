@@ -32,12 +32,12 @@ The resource system follows a layered architecture:
 
 ```
 ResourceManager
-├── PathDefinitionResolver
+├── DefinitionResolver
 │   ├── PathResolver
 │   │   └── TemplateResolver
 │   ├── ScopeSelector
 │   └── PathDefinitionRegistry
-└── PathURLResolver
+└── URLResolver
     └── ProviderRegistry
 ```
 
@@ -125,7 +125,7 @@ manager.AddDefinition(PathDefinition{
 
 ```go
 // Simple URL resolution
-result, err := manager.PathDefinitionResolver().Resolve(ctx, "user-avatars", 
+result, err := manager.DefinitionResolver().Resolve(ctx, "user-avatars", 
     &ResolveOptions{
         ParamResolver: NewValuesParameterResolver(map[ParameterName]string{
             "user_id": "12345",
@@ -144,7 +144,7 @@ fmt.Printf("URL: %s\n", result.URL)
 
 ```go
 // Resolve with default provider (CDN for content URLs)
-result, err := manager.PathDefinitionResolver().Resolve(ctx, "user-avatars", 
+result, err := manager.DefinitionResolver().Resolve(ctx, "user-avatars", 
     &ResolveOptions{
         ParamResolver: NewValuesParameterResolver(map[ParameterName]string{
             "user_id": "12345",
@@ -159,7 +159,7 @@ fmt.Printf("Avatar URL: %s\n", result.URL)
 
 ```go
 // Cleaner syntax with fluent API
-result, err := manager.PathDefinitionResolver().Resolve(ctx, "user-avatars",
+result, err := manager.DefinitionResolver().Resolve(ctx, "user-avatars",
     ResolveOptions{}.WithValues(map[ParameterName]string{
         "user_id": "12345",
     }))
@@ -195,7 +195,7 @@ chainedResolver, _ := NewParameterResolvers(
 ```go
 // Force GCS instead of default CDN
 gcsProvider := provider.ProviderGCS
-result, err := manager.PathDefinitionResolver().Resolve(ctx, "user-avatars", 
+result, err := manager.DefinitionResolver().Resolve(ctx, "user-avatars", 
     &ResolveOptions{
         Provider: &gcsProvider,
         ParamResolver: NewValuesParameterResolver(map[ParameterName]string{
@@ -212,7 +212,7 @@ fmt.Printf("GCS URL: %s\n", result.URL)
 ```go
 // Content URLs (optimized for delivery) → CDN
 contentType := URLTypeContent
-contentResult, err := manager.PathDefinitionResolver().Resolve(ctx, "resources", 
+contentResult, err := manager.DefinitionResolver().Resolve(ctx, "resources", 
     &ResolveOptions{
         URLType: &contentType,
         ParamResolver: NewValuesParameterResolver(map[ParameterName]string{
@@ -222,7 +222,7 @@ contentResult, err := manager.PathDefinitionResolver().Resolve(ctx, "resources",
 
 // Operation URLs (for management) → GCS
 operationType := URLTypeOperation
-operationResult, err := manager.PathDefinitionResolver().Resolve(ctx, "resources", 
+operationResult, err := manager.DefinitionResolver().Resolve(ctx, "resources", 
     &ResolveOptions{
         URLType: &operationType,
         ParamResolver: NewValuesParameterResolver(map[ParameterName]string{
@@ -237,7 +237,7 @@ operationResult, err := manager.PathDefinitionResolver().Resolve(ctx, "resources
 
 ```go
 // Generate signed URL with default expiry
-result, err := manager.PathDefinitionResolver().Resolve(ctx, "user-avatars", 
+result, err := manager.DefinitionResolver().Resolve(ctx, "user-avatars", 
     &ResolveOptions{
         URLOptions: &provider.URLOptions{
             SignedURL: true,
@@ -252,7 +252,7 @@ result, err := manager.PathDefinitionResolver().Resolve(ctx, "user-avatars",
 
 ```go
 // 2-hour signed URL
-result, err := manager.PathDefinitionResolver().Resolve(ctx, "user-avatars", 
+result, err := manager.DefinitionResolver().Resolve(ctx, "user-avatars", 
     &ResolveOptions{
         URLOptions: &provider.URLOptions{
             SignedURL:    true,
@@ -277,7 +277,7 @@ definition := PathDefinition{
 }
 
 // Request for 3 hours gets capped to 1 hour
-result, err := manager.PathDefinitionResolver().Resolve(ctx, "secure-docs", 
+result, err := manager.DefinitionResolver().Resolve(ctx, "secure-docs", 
     &ResolveOptions{
         URLOptions: &provider.URLOptions{
             SignedURL:    true,
@@ -300,7 +300,7 @@ ctx = useragent.WithUserAgent(ctx, &useragent.UserAgent{
 })
 
 // System selects most specific available scope
-result, err := manager.PathDefinitionResolver().Resolve(ctx, "app-resources", 
+result, err := manager.DefinitionResolver().Resolve(ctx, "app-resources", 
     &ResolveOptions{
         ParamResolver: NewValuesParameterResolver(map[ParameterName]string{
             "resource_id": "config123",
@@ -313,7 +313,7 @@ result, err := manager.PathDefinitionResolver().Resolve(ctx, "app-resources",
 ```go
 // Force global scope
 globalScope := ScopeGlobal
-result, err := manager.PathDefinitionResolver().Resolve(ctx, "shared-resources", 
+result, err := manager.DefinitionResolver().Resolve(ctx, "shared-resources", 
     &ResolveOptions{
         Scope: &globalScope,
         ParamResolver: NewValuesParameterResolver(map[ParameterName]string{
@@ -326,7 +326,7 @@ result, err := manager.PathDefinitionResolver().Resolve(ctx, "shared-resources",
 
 ```go
 // Combine all options: GCS + operation URL + signed URL + app scope
-result, err := manager.PathDefinitionResolver().Resolve(ctx, "admin-resources",
+result, err := manager.DefinitionResolver().Resolve(ctx, "admin-resources",
     ResolveOptions{}.
         WithProvider(provider.ProviderGCS).
         WithURLType(URLTypeOperation).
@@ -348,7 +348,7 @@ result, err := manager.PathDefinitionResolver().Resolve(ctx, "admin-resources",
 ```go
 // ❌ Bad: Creating new options every time
 func getBadUserAvatar(userID string) string {
-    result, _ := manager.PathDefinitionResolver().Resolve(ctx, "user-avatars", 
+    result, _ := manager.DefinitionResolver().Resolve(ctx, "user-avatars", 
         &ResolveOptions{
             URLOptions: &provider.URLOptions{SignedURL: true, SignedExpiry: 1 * time.Hour},
             ParamResolver: NewValuesParameterResolver(map[ParameterName]string{"user_id": userID}),
@@ -368,7 +368,7 @@ func getGoodUserAvatar(userID string) string {
     opts := *baseSecureOptions // Copy struct
     opts.ParamResolver = NewValuesParameterResolver(map[ParameterName]string{"user_id": userID})
     
-    result, _ := manager.PathDefinitionResolver().Resolve(ctx, "user-avatars", &opts)
+    result, _ := manager.DefinitionResolver().Resolve(ctx, "user-avatars", &opts)
     return result.URL
 }
 ```
@@ -389,7 +389,7 @@ func resolveUserResource(resourceName string, userParams map[ParameterName]strin
     userResolver := NewValuesParameterResolver(userParams)
     combinedResolver, _ := NewParameterResolvers(userResolver, userContextResolver)
     
-    return manager.PathDefinitionResolver().Resolve(ctx, resourceName, &ResolveOptions{
+    return manager.DefinitionResolver().Resolve(ctx, resourceName, &ResolveOptions{
         ParamResolver: combinedResolver,
     })
 }
@@ -433,7 +433,7 @@ func (s *UserService) GetUserAvatarURL(userID string) (string, error) {
         "user_id": userID,
     })
     
-    result, err := s.resourceManager.PathDefinitionResolver().Resolve(context.Background(), "user-avatars", &opts)
+    result, err := s.resourceManager.DefinitionResolver().Resolve(context.Background(), "user-avatars", &opts)
     if err != nil {
         return "", err
     }
@@ -473,7 +473,7 @@ func (s *AdminService) GetManagementURL(resourceType, resourceID string) (string
         "resource_id": resourceID,
     })
     
-    result, err := s.resourceManager.PathDefinitionResolver().Resolve(context.Background(), resourceType, &opts)
+    result, err := s.resourceManager.DefinitionResolver().Resolve(context.Background(), resourceType, &opts)
     if err != nil {
         return "", err
     }
@@ -516,7 +516,7 @@ func (s *CDNService) GetPublicContentURL(resourceID string) (string, error) {
         "resource_id": resourceID,
     })
     
-    result, err := s.resourceManager.PathDefinitionResolver().Resolve(context.Background(), "public-content", &opts)
+    result, err := s.resourceManager.DefinitionResolver().Resolve(context.Background(), "public-content", &opts)
     if err != nil {
         return "", err
     }
@@ -529,7 +529,7 @@ func (s *CDNService) GetSecureContentURL(resourceID string) (string, error) {
         "resource_id": resourceID,
     })
     
-    result, err := s.resourceManager.PathDefinitionResolver().Resolve(context.Background(), "secure-content", &opts)
+    result, err := s.resourceManager.DefinitionResolver().Resolve(context.Background(), "secure-content", &opts)
     if err != nil {
         return "", err
     }
@@ -571,7 +571,7 @@ func (s *ContentService) GetContentURL(resourceID, contentType string) (string, 
         }),
     }
     
-    result, err := s.resourceManager.PathDefinitionResolver().Resolve(context.Background(), "dynamic-content", opts)
+    result, err := s.resourceManager.DefinitionResolver().Resolve(context.Background(), "dynamic-content", opts)
     if err != nil {
         return "", err
     }
@@ -587,13 +587,13 @@ func (s *ContentService) GetContentURL(resourceID, contentType string) (string, 
 
 ```go
 // 1. Simple URL (default provider)
-result, _ := manager.PathDefinitionResolver().Resolve(ctx, "resource-name",
+result, _ := manager.DefinitionResolver().Resolve(ctx, "resource-name",
     ResolveOptions{}.WithValues(map[ParameterName]string{
         "param": "value",
     }))
 
 // 2. Signed URL (1 hour expiry)
-result, _ := manager.PathDefinitionResolver().Resolve(ctx, "resource-name",
+result, _ := manager.DefinitionResolver().Resolve(ctx, "resource-name",
     ResolveOptions{}.
         WithValues(params).
         WithURLOptions(&provider.URLOptions{
@@ -602,26 +602,26 @@ result, _ := manager.PathDefinitionResolver().Resolve(ctx, "resource-name",
         }))
 
 // 3. Force specific provider
-result, _ := manager.PathDefinitionResolver().Resolve(ctx, "resource-name",
+result, _ := manager.DefinitionResolver().Resolve(ctx, "resource-name",
     ResolveOptions{}.
         WithValues(params).
         WithProvider(provider.ProviderGCS))
 
 // 4. Content vs Operation URLs
-contentResult, _ := manager.PathDefinitionResolver().Resolve(ctx, "resource-name",
+contentResult, _ := manager.DefinitionResolver().Resolve(ctx, "resource-name",
     ResolveOptions{}.WithValues(params).WithURLType(URLTypeContent))   // → CDN
 
-operationResult, _ := manager.PathDefinitionResolver().Resolve(ctx, "resource-name",
+operationResult, _ := manager.DefinitionResolver().Resolve(ctx, "resource-name",
     ResolveOptions{}.WithValues(params).WithURLType(URLTypeOperation)) // → GCS
 
 // 5. Override scope
-result, _ := manager.PathDefinitionResolver().Resolve(ctx, "resource-name",
+result, _ := manager.DefinitionResolver().Resolve(ctx, "resource-name",
     ResolveOptions{}.
         WithValues(params).
         WithScope(ScopeGlobal))
 
 // 6. Complex combination
-result, _ := manager.PathDefinitionResolver().Resolve(ctx, "resource-name",
+result, _ := manager.DefinitionResolver().Resolve(ctx, "resource-name",
     ResolveOptions{}.
         WithProvider(provider.ProviderGCS).
         WithURLType(URLTypeOperation).
@@ -720,12 +720,12 @@ Central interface for managing resource definitions and resolution.
 
 ```go
 type ResourceManager interface {
-    PathURLResolver() PathURLResolver
-    PathDefinitionResolver() PathDefinitionResolver
+    URLResolver() URLResolver
+    DefinitionResolver() DefinitionResolver
 
-    GetDefinition(name PathDefinitionName) (*PathDefinition, error)
+    GetDefinition(name DefinitionName) (*PathDefinition, error)
     AddDefinition(definition PathDefinition) error
-    RemoveDefinition(defName PathDefinitionName) error
+    RemoveDefinition(defName DefinitionName) error
     GetAllDefinitions() []*PathDefinition
 }
 ```
@@ -747,7 +747,7 @@ Defines resource path patterns with provider and scope support.
 
 ```go
 type PathDefinition struct {
-    Name          PathDefinitionName                      // Unique identifier
+    Name          DefinitionName                      // Unique identifier
     DisplayName   string                                  // Human-readable name
     Description   string                                  // Description of the resource
     AllowedScopes []ScopeType                            // Permitted scopes (ordered by priority)
@@ -1239,7 +1239,7 @@ func resolveWithSpecificProvider(manager resource.ResourceManager) {
             resource.Version:    "1.0.0",
         })
 
-    result, err := manager.PathDefinitionResolver().Resolve(ctx, "backup-file", &opts)
+    result, err := manager.DefinitionResolver().Resolve(ctx, "backup-file", &opts)
     if err != nil {
         log.Printf("Failed to resolve with GCS: %v", err)
         return
@@ -1306,7 +1306,7 @@ func resolveWithAutomaticScope(manager resource.ResourceManager) {
         resource.ResourceID: "feature_config_123",
     })
 
-    result, err := manager.PathDefinitionResolver().Resolve(ctx, "app-config", &opts)
+    result, err := manager.DefinitionResolver().Resolve(ctx, "app-config", &opts)
     if err != nil {
         log.Printf("Scope resolution failed: %v", err)
         return
@@ -1331,7 +1331,7 @@ func resolveWithExplicitScope(manager resource.ResourceManager) {
         resource.ResourceID: "shared_achievement_badge",
     })
 
-    globalResult, err := manager.PathDefinitionResolver().Resolve(ctx, "achievement-badge", &globalOpts)
+    globalResult, err := manager.DefinitionResolver().Resolve(ctx, "achievement-badge", &globalOpts)
     if err != nil {
         log.Printf("Global scope resolution failed: %v", err)
         return
@@ -1359,7 +1359,7 @@ func generateSignedURL(manager resource.ResourceManager) {
         resource.ResourceID: "secure_document_789",
     })
 
-    result, err := manager.PathDefinitionResolver().Resolve(ctx, "secure-document", &opts)
+    result, err := manager.DefinitionResolver().Resolve(ctx, "secure-document", &opts)
     if err != nil {
         log.Printf("Failed to generate signed URL: %v", err)
         return
@@ -1401,7 +1401,7 @@ func resolveWithDynamicExpiry(manager resource.ResourceManager, contentType stri
         "content_type":      contentType,
     })
 
-    result, err := manager.PathDefinitionResolver().Resolve(ctx, "dynamic-content", &opts)
+    result, err := manager.DefinitionResolver().Resolve(ctx, "dynamic-content", &opts)
     if err != nil {
         log.Printf("Failed to resolve: %v", err)
         return
