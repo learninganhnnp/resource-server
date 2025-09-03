@@ -5,130 +5,134 @@ import (
 	"time"
 
 	"avironactive.com/resource"
+	"avironactive.com/resource/metadata"
 	"avironactive.com/resource/provider"
+	"avironactive.com/resource/resolver"
+	"avironactive.com/resource/upload"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func AllDefinitions() []*resource.PathDefinition {
-	return []*resource.PathDefinition{
+func AllDefinitions() []*resolver.PathDefinition {
+	return []*resolver.PathDefinition{
 		AchievementsPath,
 		WorkoutsPath,
 	}
 }
 
 var (
-	AchievementsPathName = resource.PathDefinitionName("achievements")
-	AchievementPathName  = resource.PathDefinitionName("achievement")
-	WorkoutsPathName     = resource.PathDefinitionName("workouts")
-	WorkoutPathName      = resource.PathDefinitionName("workout")
+	AchievementsPathName = resolver.PathDefinitionName("achievements")
+	AchievementPathName  = resolver.PathDefinitionName("achievement")
+	WorkoutsPathName     = resolver.PathDefinitionName("workouts")
+	WorkoutPathName      = resolver.PathDefinitionName("workout")
 
-	AchievementsPath = (&resource.PathDefinition{
+	AchievementsPath = (&resolver.PathDefinition{
 		Name:          AchievementsPathName,
 		DisplayName:   "Achievement Resources",
 		Description:   "Achievement icons and metadata shared globally",
-		AllowedScopes: []resource.ScopeType{resource.ScopeApp, resource.ScopeGlobal},
-		Patterns: map[provider.ProviderName]resource.PathPatterns{
+		AllowedScopes: []resolver.ScopeType{resolver.ScopeApp, resolver.ScopeGlobal},
+		Patterns: map[provider.ProviderName]resolver.PathPatterns{
 			provider.ProviderCDN: {
-				Patterns: map[resource.ScopeType]string{
-					resource.ScopeApp:    "/game/{env}/shared/{app}/achievements",
-					resource.ScopeGlobal: "/game/{env}/shared/global/achievements",
+				Patterns: map[resolver.ScopeType]string{
+					resolver.ScopeApp:    "/game/{env}/shared/{app}/achievements",
+					resolver.ScopeGlobal: "/game/{env}/shared/global/achievements",
 				},
-				URLType: resource.URLTypeContent,
+				URLType: resolver.URLTypeDelivery,
 			},
 			provider.ProviderR2: {
-				Patterns: map[resource.ScopeType]string{
-					resource.ScopeApp:    "/aviron-game-assets/{env}/shared/{app}/achievements",
-					resource.ScopeGlobal: "/aviron-game-assets/{env}/shared/global/achievements",
+				Patterns: map[resolver.ScopeType]string{
+					resolver.ScopeApp:    "/aviron-game-assets/{env}/shared/{app}/achievements",
+					resolver.ScopeGlobal: "/aviron-game-assets/{env}/shared/global/achievements",
 				},
-				URLType: resource.URLTypeOperation,
+				URLType: resolver.URLTypeStorage,
 			},
 		},
-		Parameters: []*resource.ParameterDefinition{
+		Parameters: []*resolver.ParameterDefinition{
 			{Name: "app", Description: "Application name (bike, rower) - required for app scope"},
 		},
-	}).WithChildren(&resource.PathDefinition{
+	}).WithChildren(&resolver.PathDefinition{
 		Name:        AchievementPathName,
 		DisplayName: "Achievement Resource",
 		Description: "Resource for a specific achievement",
-		Patterns: map[provider.ProviderName]resource.PathPatterns{
+		Patterns: map[provider.ProviderName]resolver.PathPatterns{
 			provider.ProviderCDN: {
-				Patterns: map[resource.ScopeType]string{
-					resource.ScopeApp:    "{achievement_id}.{format}",
-					resource.ScopeGlobal: "{achievement_id}.{format}",
+				Patterns: map[resolver.ScopeType]string{
+					resolver.ScopeApp:    "{achievement_id}.{format}",
+					resolver.ScopeGlobal: "{achievement_id}.{format}",
 				},
-				URLType: resource.URLTypeContent,
+				URLType: resolver.URLTypeDelivery,
 			},
 			provider.ProviderR2: {
-				Patterns: map[resource.ScopeType]string{
-					resource.ScopeApp:    "{achievement_id}.{format}",
-					resource.ScopeGlobal: "{achievement_id}.{format}",
+				Patterns: map[resolver.ScopeType]string{
+					resolver.ScopeApp:    "{achievement_id}.{format}",
+					resolver.ScopeGlobal: "{achievement_id}.{format}",
 				},
-				URLType: resource.URLTypeOperation,
+				URLType: resolver.URLTypeStorage,
 			},
 		},
-		Parameters: []*resource.ParameterDefinition{
+		Parameters: []*resolver.ParameterDefinition{
 			{Name: "achievement_id", Rules: []validation.Rule{validation.Required}, Description: "Achievement identifier"},
 			{Name: "format", DefaultValue: "png", Rules: []validation.Rule{validation.Required}, Description: "Image format (png, jpg, svg)"},
 			{Name: "app", Description: "Application name (bike, rower) - required for app scope"},
 		},
 	})
 
-	WorkoutsPath = (&resource.PathDefinition{
+	WorkoutsPath = (&resolver.PathDefinition{
 		Name:          WorkoutsPathName,
 		DisplayName:   "Workout Resources",
 		Description:   "Workout files shared globally",
-		AllowedScopes: []resource.ScopeType{resource.ScopeApp, resource.ScopeGlobal},
-		Patterns: map[provider.ProviderName]resource.PathPatterns{
+		AllowedScopes: []resolver.ScopeType{resolver.ScopeApp, resolver.ScopeGlobal},
+		Patterns: map[provider.ProviderName]resolver.PathPatterns{
 			provider.ProviderCDN: {
-				Patterns: map[resource.ScopeType]string{
-					resource.ScopeApp:    "/game/{env}/shared/{app}/workouts",
-					resource.ScopeGlobal: "/game/{env}/shared/global/workouts",
+				Patterns: map[resolver.ScopeType]string{
+					resolver.ScopeApp:    "/game/{env}/shared/{app}/workouts",
+					resolver.ScopeGlobal: "/game/{env}/shared/global/workouts",
 				},
-				URLType: resource.URLTypeContent,
+				URLType: resolver.URLTypeDelivery,
 			},
 			provider.ProviderR2: {
-				Patterns: map[resource.ScopeType]string{
-					resource.ScopeApp:    "/aviron-assets/{env}/shared/{app}/workouts",
-					resource.ScopeGlobal: "/aviron-assets/{env}/shared/global/workouts",
+				Patterns: map[resolver.ScopeType]string{
+					resolver.ScopeApp:    "/aviron-assets/{env}/shared/{app}/workouts",
+					resolver.ScopeGlobal: "/aviron-assets/{env}/shared/global/workouts",
 				},
-				URLType: resource.URLTypeOperation,
+				URLType: resolver.URLTypeStorage,
 			},
 		},
-		Parameters: []*resource.ParameterDefinition{
+		Parameters: []*resolver.ParameterDefinition{
 			{Name: "app", Description: "Application name (bike, rower) - required for app scope"},
 		},
-		DefaultStorageMetadata: &resource.StorageMetadataConfig{
-			CacheControl: resource.CacheControlConfig{
+		DefaultStorageMetadata: &metadata.StorageMetadataConfig{
+			CacheControl: metadata.CacheControlConfig{
 				MaxAge:      86400 * 7, // 7 days
 				AllowPublic: true,
 				Default:     "public, max-age=86400",
 			},
-			RequiredChecksums: []provider.ChecksumAlgorithm{provider.ChecksumAlgorithmSHA256},
+			RequiredChecksums: []metadata.ChecksumAlgorithm{metadata.ChecksumAlgorithmSHA256},
 			CustomHeaders: map[string]string{
 				"x-aviron-private": "true",
 			},
 		},
-	}).WithChildren(&resource.PathDefinition{
+	}).WithChildren(&resolver.PathDefinition{
 		Name:        WorkoutPathName,
 		DisplayName: "Workout Resource",
 		Description: "Resource for a specific workout file",
-		Patterns: map[provider.ProviderName]resource.PathPatterns{
+		Patterns: map[provider.ProviderName]resolver.PathPatterns{
 			provider.ProviderCDN: {
-				Patterns: map[resource.ScopeType]string{
-					resource.ScopeApp:    "{user_id}/{workout_id}.{format}",
-					resource.ScopeGlobal: "{user_id}/{workout_id}.{format}",
+				Patterns: map[resolver.ScopeType]string{
+					resolver.ScopeApp:    "{user_id}/{workout_id}.{format}",
+					resolver.ScopeGlobal: "{user_id}/{workout_id}.{format}",
 				},
-				URLType: resource.URLTypeContent,
+				URLType: resolver.URLTypeDelivery,
 			},
 			provider.ProviderR2: {
-				Patterns: map[resource.ScopeType]string{
-					resource.ScopeApp:    "{user_id}/{workout_id}.{format}",
-					resource.ScopeGlobal: "{user_id}/{workout_id}.{format}",
+				Patterns: map[resolver.ScopeType]string{
+					resolver.ScopeApp:    "{user_id}/{workout_id}.{format}",
+					resolver.ScopeGlobal: "{user_id}/{workout_id}.{format}",
 				},
-				URLType: resource.URLTypeOperation,
+				URLType: resolver.URLTypeStorage,
 			},
 		},
-		Parameters: []*resource.ParameterDefinition{
+		Parameters: []*resolver.ParameterDefinition{
 			{Name: "workout_id", Rules: []validation.Rule{validation.Required}, Description: "Workout identifier"},
 			{Name: "format", DefaultValue: "json", Rules: []validation.Rule{validation.Required}, Description: "File format (erg, zwo, etc)"},
 			{Name: "user_id", DefaultValue: "anonymous", Description: "User ID or 'anonymous' for public workouts"},
@@ -136,16 +140,17 @@ var (
 	})
 )
 
-func NewResourceManager(ctx context.Context) (resource.ResourceManager, error) {
+func NewResourceManager(ctx context.Context, pgxConn *pgxpool.Pool) (resource.ResourceManager, error) {
 	return resource.NewResourceManager(
 		resource.WithProviders(newProviders(ctx)...),
 		resource.WithDefinitions(AllDefinitions()...),
-		resource.WithFallbackParameterResolver(resource.DefaultFallbackParameterResolver(
+		resource.WithFallbackParameterResolver(resolver.DefaultFallbackParameterResolver(
 			AllClientAppNames(),
 			AllAppNames(),
 			"dev",
 			"v1.0.0",
 		)),
+		resource.WithUploadRepository(upload.NewRepository(pgxConn)),
 	)
 }
 

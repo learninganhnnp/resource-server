@@ -29,7 +29,7 @@ func (h *HealthHandler) HealthCheck(c *fiber.Ctx) error {
 	response := HealthResponse{
 		Success: true,
 		Data: &HealthData{
-			Status:    "ok",
+			Status:    "healthy",
 			Timestamp: time.Now(),
 			Version:   "1.0.0",
 		},

@@ -5,7 +5,9 @@ import (
 
 	"avironactive.com/common/context"
 	"avironactive.com/resource"
+	"avironactive.com/resource/metadata"
 	"avironactive.com/resource/provider"
+	"avironactive.com/resource/resolver"
 	"github.com/anh-nguyen/resource-server/internal/app/dto"
 )
 
@@ -28,7 +30,7 @@ func (uc *MultipartUseCase) InitMultipartUpload(ctx context.Context, req *dto.Mu
 	// Get the path using ResolveReadURL
 	pathResult, err := uc.manager.PathDefinitionResolver().ResolveDownloadURL(
 		ctx,
-		resource.PathDefinitionName(req.DefinitionName),
+		resolver.PathDefinitionName(req.DefinitionName),
 		opts,
 	)
 	if err != nil {
@@ -46,18 +48,18 @@ func (uc *MultipartUseCase) InitMultipartUpload(ctx context.Context, req *dto.Mu
 		return nil, fmt.Errorf("provider %s does not support multipart uploads", req.Provider)
 	}
 
-	var headers *provider.RequestHeaders
+	var headers *metadata.StorageMetadata
 	if req.Metadata != nil {
 		headers = req.Metadata.ToRequestHeaders()
 	}
 
-	uploadID, err := multipartProvider.CreateMultipartUpload(ctx.Context(), pathResult.ResolvedPath, headers)
+	uploadID, err := multipartProvider.CreateMultipartUpload(ctx.Context(), pathResult.ResolvedPath.Path, headers)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create multipart upload: %w", err)
 	}
 
 	caps := multipartProvider.Capabilities()
-	return dto.NewMultipartInitResponse(uploadID, pathResult.ResolvedPath, req.Provider, caps.Multipart), nil
+	return dto.NewMultipartInitResponse(uploadID, pathResult.ResolvedPath.Path, req.Provider, caps.Multipart), nil
 }
 
 // GetMultipartURLs gets signed URLs for multipart upload parts

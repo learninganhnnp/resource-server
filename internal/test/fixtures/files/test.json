@@ -1,0 +1,6 @@
+{
+  "test": "data",
+  "purpose": "API testing",
+  "size": "small",
+  "content_type": "application/json"
+}

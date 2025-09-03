@@ -14,10 +14,12 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/anh-nguyen/resource-server/core"
 	"github.com/anh-nguyen/resource-server/internal/app/usecases"
 	"github.com/anh-nguyen/resource-server/internal/infrastructure/config"
+	"github.com/anh-nguyen/resource-server/internal/infrastructure/database"
 	"github.com/anh-nguyen/resource-server/internal/interfaces/http/handlers"
 	"github.com/anh-nguyen/resource-server/internal/interfaces/http/middleware"
 )
@@ -25,6 +27,7 @@ import (
 type Server struct {
 	app             *fiber.App
 	config          *config.Config
+	db              *pgxpool.Pool
 	resourceManager resource.ResourceManager
 }
 
@@ -47,13 +50,20 @@ func NewServer(cfg *config.Config) *Server {
 		AllowHeaders: joinStrings(cfg.CORS.AllowedHeaders, ","),
 	}))
 
-	resourceManager, err := core.NewResourceManager(context.Background())
+	// Initialize database connection
+	db, err := database.NewConnection(&cfg.Database)
+	if err != nil {
+		log.Fatalf("Failed to initialize database: %v", err)
+	}
+
+	resourceManager, err := core.NewResourceManager(context.Background(), db)
 	if err != nil {
 		log.Fatalf("Failed to initialize resource manager: %v", err)
 	}
 	return &Server{
 		app:             app,
 		config:          cfg,
+		db:              db,
 		resourceManager: resourceManager,
 	}
 }
@@ -77,6 +87,12 @@ func (s *Server) SetupRoutes() {
 	multipartUseCase := usecases.NewMultipartUseCase(s.resourceManager)
 	multipartHandler := handlers.NewMultipartHandler(multipartUseCase)
 
+	// Achievement setup
+	achievementRepo := database.NewAchievementRepository(s.db)
+	uploadManager := s.resourceManager.UploadManager()
+	achievementUseCase := usecases.NewAchievementUseCase(achievementRepo, s.resourceManager)
+	achievementHandler := handlers.NewAchievementHandler(achievementUseCase, uploadManager)
+
 	// Resources group
 	resources := api.Group("/resources")
 
@@ -97,6 +113,15 @@ func (s *Server) SetupRoutes() {
 	resources.Delete("/:provider/*", fileOperationsHandler.DeleteFile)
 	resources.Post("/multipart/init", multipartHandler.InitMultipartUpload)
 	resources.Post("/multipart/urls", multipartHandler.GetMultipartURLs)
+
+	// Achievement routes
+	achievements := api.Group("/achievements")
+	achievements.Get("/", achievementHandler.ListAchievements)
+	achievements.Post("/", achievementHandler.CreateAchievement)
+	achievements.Get("/:id", achievementHandler.GetAchievement)
+	achievements.Put("/:id/icon", achievementHandler.UpdateAchievementIcon)
+	achievements.Post("/uploads/:id/confirm", achievementHandler.ConfirmUpload)
+	achievements.Post("/uploads/:id/multipart", achievementHandler.GetMultipartURLs)
 }
 
 func (s *Server) Start() error {
@@ -129,6 +154,10 @@ func (s *Server) Shutdown() error {
 
 	if err := s.resourceManager.Close(); err != nil {
 		return fmt.Errorf("failed to close resource manager: %w", err)
+	}
+
+	if s.db != nil {
+		s.db.Close()
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)

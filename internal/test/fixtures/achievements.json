@@ -1,0 +1,98 @@
+[
+  {
+    "id": "123e4567-e89b-12d3-a456-426614174001",
+    "name": "First Steps",
+    "description": "Complete your first workout",
+    "category": "beginner",
+    "points": 10,
+    "is_active": true
+  },
+  {
+    "id": "123e4567-e89b-12d3-a456-426614174002",
+    "name": "Marathon Runner",
+    "description": "Complete 42km in total",
+    "category": "endurance",
+    "points": 500,
+    "is_active": true
+  },
+  {
+    "id": "123e4567-e89b-12d3-a456-426614174003",
+    "name": "Speed demon",
+    "description": "Reach 20km/h average speed",
+    "category": "speed",
+    "points": 250,
+    "is_active": true
+  },
+  {
+    "id": "123e4567-e89b-12d3-a456-426614174004",
+    "name": "Consistency King",
+    "description": "Workout 30 days in a row",
+    "category": "consistency",
+    "points": 750,
+    "is_active": true
+  },
+  {
+    "id": "123e4567-e89b-12d3-a456-426614174005",
+    "name": "Power Lifter",
+    "description": "Generate 300W average power",
+    "category": "strength",
+    "points": 400,
+    "is_active": true
+  },
+  {
+    "id": "123e4567-e89b-12d3-a456-426614174006",
+    "name": "Distance Master",
+    "description": "Complete 100km total distance",
+    "category": "endurance",
+    "points": 300,
+    "is_active": true
+  },
+  {
+    "id": "123e4567-e89b-12d3-a456-426614174007",
+    "name": "Calorie Burner",
+    "description": "Burn 1000 calories in a single session",
+    "category": "fitness",
+    "points": 200,
+    "is_active": false
+  },
+  {
+    "id": "123e4567-e89b-12d3-a456-426614174008",
+    "name": "Early Bird",
+    "description": "Complete 10 morning workouts",
+    "category": "lifestyle",
+    "points": 150,
+    "is_active": true
+  },
+  {
+    "id": "123e4567-e89b-12d3-a456-426614174009",
+    "name": "Weekend Warrior",
+    "description": "Complete 20 weekend workouts",
+    "category": "lifestyle",
+    "points": 180,
+    "is_active": true
+  },
+  {
+    "id": "123e4567-e89b-12d3-a456-426614174010",
+    "name": "Goal Crusher",
+    "description": "Achieve personal best in 5 different metrics",
+    "category": "achievement",
+    "points": 600,
+    "is_active": true
+  },
+  {
+    "id": "123e4567-e89b-12d3-a456-426614174011",
+    "name": "Team Player",
+    "description": "Join 10 group workouts",
+    "category": "social",
+    "points": 120,
+    "is_active": false
+  },
+  {
+    "id": "123e4567-e89b-12d3-a456-426614174012",
+    "name": "Technique Master",
+    "description": "Maintain perfect form for 30 minutes",
+    "category": "technique",
+    "points": 350,
+    "is_active": true
+  }
+]

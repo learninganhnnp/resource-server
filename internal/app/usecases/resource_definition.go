@@ -4,6 +4,7 @@ import (
 	"avironactive.com/common/context"
 
 	"avironactive.com/resource"
+	"avironactive.com/resource/resolver"
 	"github.com/anh-nguyen/resource-server/internal/app/dto"
 )
 
@@ -33,7 +34,7 @@ func (uc *ResourceDefinitionUseCase) ListDefinitions(ctx context.Context) ([]*dt
 
 // GetDefinition returns a specific resource definition by name
 func (uc *ResourceDefinitionUseCase) GetDefinition(ctx context.Context, name string) (*dto.PathDefinitionResponse, error) {
-	def, err := uc.manager.GetDefinition(resource.PathDefinitionName(name))
+	def, err := uc.manager.GetDefinition(resolver.PathDefinitionName(name))
 	if err != nil {
 		return nil, err
 	}
@@ -42,15 +43,15 @@ func (uc *ResourceDefinitionUseCase) GetDefinition(ctx context.Context, name str
 }
 
 // convertScopes converts resource scopes to string representations
-func convertScopes(scopes []resource.ScopeType) []string {
+func convertScopes(scopes []resolver.ScopeType) []string {
 	result := make([]string, 0, len(scopes))
 	for _, scope := range scopes {
 		switch scope {
-		case resource.ScopeGlobal:
+		case resolver.ScopeGlobal:
 			result = append(result, "G")
-		case resource.ScopeApp:
+		case resolver.ScopeApp:
 			result = append(result, "A")
-		case resource.ScopeClientApp:
+		case resolver.ScopeClientApp:
 			result = append(result, "CA")
 		}
 	}
@@ -58,7 +59,7 @@ func convertScopes(scopes []resource.ScopeType) []string {
 }
 
 // convertParameters converts path parameters to response DTOs
-func convertParameters(params []*resource.ParameterDefinition) []dto.PathParameterResponse {
+func convertParameters(params []*resolver.ParameterDefinition) []dto.PathParameterResponse {
 	result := make([]dto.PathParameterResponse, 0, len(params))
 	for _, param := range params {
 		response := dto.PathParameterResponse{
@@ -72,7 +73,7 @@ func convertParameters(params []*resource.ParameterDefinition) []dto.PathParamet
 	return result
 }
 
-func convertDefinitionPath(def *resource.PathDefinition) *dto.PathDefinitionResponse {
+func convertDefinitionPath(def *resolver.PathDefinition) *dto.PathDefinitionResponse {
 	providers := make([]string, 0, len(def.Patterns))
 	for p := range def.Patterns {
 		providers = append(providers, string(p))

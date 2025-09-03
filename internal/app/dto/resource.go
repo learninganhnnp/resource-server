@@ -3,8 +3,9 @@ package dto
 import (
 	"time"
 
-	"avironactive.com/resource"
+	"avironactive.com/resource/metadata"
 	"avironactive.com/resource/provider"
+	"avironactive.com/resource/resolver"
 )
 
 // PathDefinitionResponse represents a resource path definition in API responses
@@ -57,7 +58,7 @@ type ProviderCapabilities struct {
 	SupportsMultipart          bool                         `json:"supportsMultipart"`          // Supports multipart uploads
 	SupportsResumableUploads   bool                         `json:"supportsResumableUploads"`   // Supports resumable uploads (if different from multipart)
 	SupportsSignedURLs         bool                         `json:"supportsSignedUrls"`         // Supports generating signed URLs for read/write operations
-	SupportsChecksumAlgorithms []provider.ChecksumAlgorithm `json:"supportsChecksumAlgorithms"` // Supported checksum algorithms for uploads and downloads
+	SupportsChecksumAlgorithms []metadata.ChecksumAlgorithm `json:"supportsChecksumAlgorithms"` // Supported checksum algorithms for uploads and downloads
 	MaxUploadSize              int64                        `json:"maxUploadSize"`              // Maximum single object size (for non-multipart uploads)
 	MaxExpiry                  time.Duration                `json:"maxExpiry"`                  // Maximum allowed expiry for signed URLs
 	MinExpiry                  time.Duration                `json:"minExpiry"`                  // Minimum allowed expiry for signed URLs
@@ -118,27 +119,27 @@ type UploadRequest struct {
 	Metadata   *UploadMetadata   `json:"metadata,omitempty" validate:"omitempty"`
 }
 
-func (r UploadRequest) To() *resource.UploadResolveOptions {
+func (r UploadRequest) To() *resolver.PathDefUploadOpts {
 	scope := parseScope(r.Scope)
-	params := make(map[resource.ParameterName]string)
+	params := make(map[resolver.ParameterName]string)
 	for k, v := range r.Parameters {
-		params[resource.ParameterName(k)] = v
+		params[resolver.ParameterName(k)] = v
 	}
 
-	return (&resource.UploadResolveOptions{}).WithValues(params).WithScope(scope, r.ScopeValue)
+	return (&resolver.PathDefUploadOpts{}).WithValues(params).WithScope(scope, r.ScopeValue)
 }
 
-// parseScope converts string scope to resource.Scope
-func parseScope(scope string) resource.ScopeType {
+// parseScope converts string scope to resolver.Scope
+func parseScope(scope string) resolver.ScopeType {
 	switch scope {
 	case "G":
-		return resource.ScopeGlobal
+		return resolver.ScopeGlobal
 	case "A":
-		return resource.ScopeApp
+		return resolver.ScopeApp
 	case "CA":
-		return resource.ScopeClientApp
+		return resolver.ScopeClientApp
 	default:
-		return resource.ScopeGlobal
+		return resolver.ScopeGlobal
 	}
 }
 
@@ -154,18 +155,18 @@ type UploadMetadata struct {
 	CustomHeaders      map[string]string `json:"customHeaders,omitempty" validate:"omitempty,dive,keys,max=64,endkeys,max=512"`
 }
 
-func (m *UploadMetadata) ToRequestHeaders() *provider.RequestHeaders {
+func (m *UploadMetadata) ToRequestHeaders() *metadata.StorageMetadata {
 	if m == nil {
 		return nil
 	}
-	return &provider.RequestHeaders{
+	return &metadata.StorageMetadata{
 		ContentType:        m.ContentType,
 		ContentEncoding:    m.ContentEncoding,
 		ContentLanguage:    m.ContentLanguage,
 		ContentDisposition: m.ContentDisposition,
 		CacheControl:       m.CacheControl,
-		ACL:                provider.ACLType(m.ACL),
-		StorageClass:       provider.StorageClassType(m.StorageClass),
+		ACL:                metadata.ACLType(m.ACL),
+		StorageClass:       metadata.StorageClassType(m.StorageClass),
 		Metadata:           m.CustomHeaders,
 	}
 }
@@ -186,8 +187,8 @@ type DownloadRequest struct {
 	ResponseHeaders map[string]string `json:"responseHeaders,omitempty" validate:"omitempty,dive,keys,max=64,endkeys,max=512"`
 }
 
-func (r *DownloadRequest) To() *resource.DownloadResolveOptions {
-	opts := &resource.DownloadResolveOptions{}
+func (r *DownloadRequest) To() *resolver.PathDownloadOpts {
+	opts := &resolver.PathDownloadOpts{}
 	if r.Expiry != "" {
 		// Parse expiry duration and set on options
 		// This would need to be implemented based on your duration parsing logic
@@ -201,11 +202,12 @@ func (r *DownloadRequest) To() *resource.DownloadResolveOptions {
 
 // SignedURLResponse represents a signed URL response
 type SignedURLResponse struct {
-	URL         string            `json:"url"`
-	Method      string            `json:"method"`
-	ResolvePath string            `json:"resolvePath,omitempty"`
-	Headers     map[string]string `json:"headers,omitempty"`
-	ExpiresAt   time.Time         `json:"expiresAt"`
+	URL                string            `json:"url"`
+	Method             string            `json:"method"`
+	Headers            map[string]string `json:"headers,omitempty"`
+	ExpiresAt          time.Time         `json:"expiresAt"`
+	ResolvedPath       string            `json:"resolvedPath,omitempty"`
+	ResolvedParameters map[string]string `json:"resolvedParameters,omitempty"`
 }
 
 // MultipartUploadResponse represents a multipart upload response
@@ -250,10 +252,10 @@ type ChecksumInfo struct {
 	Value     string `json:"value"`
 }
 
-// ToProviderChecksum converts ChecksumInfo to provider.Checksum
-func (c *ChecksumInfo) ToProviderChecksum() *provider.Checksum {
-	return &provider.Checksum{
-		Algorithm: provider.ChecksumAlgorithm(c.Algorithm),
+// ToProviderChecksum converts ChecksumInfo to metadata.Checksum
+func (c *ChecksumInfo) ToProviderChecksum() *metadata.Checksum {
+	return &metadata.Checksum{
+		Algorithm: metadata.ChecksumAlgorithm(c.Algorithm),
 		Value:     c.Value,
 	}
 }
@@ -269,14 +271,14 @@ type MetadataUpdateRequest struct {
 	CustomHeaders      map[string]string `json:"customHeaders,omitempty" validate:"omitempty,dive,keys,max=64,endkeys,max=512"`
 }
 
-func (r *MetadataUpdateRequest) ToRequestHeaders() *provider.RequestHeaders {
-	return &provider.RequestHeaders{
+func (r *MetadataUpdateRequest) ToRequestHeaders() *metadata.StorageMetadata {
+	return &metadata.StorageMetadata{
 		ContentType:        r.ContentType,
 		ContentEncoding:    r.ContentEncoding,
 		ContentLanguage:    r.ContentLanguage,
 		ContentDisposition: r.ContentDisposition,
 		CacheControl:       r.CacheControl,
-		ACL:                provider.ACLType(r.ACL),
+		ACL:                metadata.ACLType(r.ACL),
 		Metadata:           r.CustomHeaders,
 	}
 }
@@ -300,7 +302,7 @@ func (r *MetadataUpdateRequest) ToUpdateMetadata() *provider.UpdateMetadata {
 		updateOpts.CacheControl = &r.CacheControl
 	}
 	if r.ACL != "" {
-		acl := provider.ACLType(r.ACL)
+		acl := metadata.ACLType(r.ACL)
 		updateOpts.ACL = &acl
 	}
 	if len(r.CustomHeaders) > 0 {
@@ -320,19 +322,19 @@ type MultipartInitRequest struct {
 	Metadata       *UploadMetadata   `json:"metadata,omitempty"`
 }
 
-func (req MultipartInitRequest) To() *resource.DownloadResolveOptions {
-	opts := (&resource.DownloadResolveOptions{}).
+func (req MultipartInitRequest) To() *resolver.PathDefDownloadOpts {
+	opts := (&resolver.PathDefDownloadOpts{}).
 		WithProvider(provider.ProviderName(req.Provider))
 
 	if req.Scope != "" {
-		opts = opts.WithScope(resource.ScopeType(req.Scope), req.ScopeValue)
+		opts = opts.WithScope(resolver.ScopeType(req.Scope), req.ScopeValue)
 	}
 
 	// Add parameters to options
 	if req.ParamResolver != nil {
-		params := make(map[resource.ParameterName]string)
+		params := make(map[resolver.ParameterName]string)
 		for k, v := range req.ParamResolver {
-			params[resource.ParameterName(k)] = v
+			params[resolver.ParameterName(k)] = v
 		}
 		opts = opts.WithValues(params)
 	}
@@ -358,13 +360,13 @@ type MultipartURLsRequest struct {
 	URLOptions []*PartRequest `json:"urlOptions" validate:"required,dive"`
 }
 
-func (req MultipartURLsRequest) To() *resource.MultipartURLsResolveOptions {
+func (req MultipartURLsRequest) To() *resolver.PathMultipartOpts {
 	var parts = make([]provider.Part, 0, len(req.URLOptions))
 	for _, partReq := range req.URLOptions {
 		parts = append(parts, partReq.To())
 	}
 
-	urlOpts := (&resource.MultipartURLsResolveOptions{
+	urlOpts := (&resolver.PathMultipartOpts{
 		URLOptions: &provider.MultipartURLsOption{
 			Parts: parts,
 		},

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 )
 
 var (
@@ -151,6 +152,20 @@ func ValidateListParameters(maxKeys int, continuationToken, prefix string) Valid
 	}
 
 	return errors
+}
+
+// ValidateUUID validates a UUID string
+func ValidateUUID(uuidStr string) error {
+	if uuidStr == "" {
+		return ValidationError{Field: "id", Message: "ID is required"}
+	}
+
+	_, err := uuid.Parse(uuidStr)
+	if err != nil {
+		return ValidationError{Field: "id", Message: "invalid UUID format"}
+	}
+
+	return nil
 }
 
 // Custom validator functions

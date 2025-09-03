@@ -1,8 +1,18 @@
 server:
-  port: 8080
+  port: 8081
   host: "0.0.0.0"
   read_timeout: "30s"
   write_timeout: "30s"
+
+database:
+  host: "${DB_HOST}"
+  port: 5432
+  database: "${DB_NAME}"
+  username: "${DB_USERNAME}"
+  password: "${DB_PASSWORD}"
+  ssl_mode: "disable"
+  max_open_conns: 25
+  max_idle_conns: 5
 
 cors:
   allowed_origins: ["*"]

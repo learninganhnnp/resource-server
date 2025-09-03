@@ -10,6 +10,7 @@ import (
 
 type Config struct {
 	Server    ServerConfig    `yaml:"server"`
+	Database  DatabaseConfig  `yaml:"database"`
 	CORS      CORSConfig      `yaml:"cors"`
 	Providers ProvidersConfig `yaml:"providers"`
 	Logging   LoggingConfig   `yaml:"logging"`
@@ -20,6 +21,17 @@ type ServerConfig struct {
 	Host         string        `yaml:"host"`
 	ReadTimeout  time.Duration `yaml:"read_timeout"`
 	WriteTimeout time.Duration `yaml:"write_timeout"`
+}
+
+type DatabaseConfig struct {
+	Host         string `yaml:"host"`
+	Port         int    `yaml:"port"`
+	Database     string `yaml:"database"`
+	Username     string `yaml:"username"`
+	Password     string `yaml:"password"`
+	SSLMode      string `yaml:"ssl_mode"`
+	MaxOpenConns int    `yaml:"max_open_conns"`
+	MaxIdleConns int    `yaml:"max_idle_conns"`
 }
 
 type CORSConfig struct {
@@ -85,6 +97,13 @@ func (c *Config) validate() error {
 		return fmt.Errorf("server host cannot be empty")
 	}
 
+	if c.Database.Host == "" {
+		return fmt.Errorf("database host cannot be empty")
+	}
+	if c.Database.Database == "" {
+		return fmt.Errorf("database name cannot be empty")
+	}
+
 	return nil
 }
 
@@ -111,5 +130,18 @@ func (c *Config) setDefaults() {
 	}
 	if len(c.CORS.AllowedHeaders) == 0 {
 		c.CORS.AllowedHeaders = []string{"Content-Type", "Authorization"}
+	}
+
+	if c.Database.Port == 0 {
+		c.Database.Port = 5432
+	}
+	if c.Database.SSLMode == "" {
+		c.Database.SSLMode = "disable"
+	}
+	if c.Database.MaxOpenConns == 0 {
+		c.Database.MaxOpenConns = 25
+	}
+	if c.Database.MaxIdleConns == 0 {
+		c.Database.MaxIdleConns = 5
 	}
 }

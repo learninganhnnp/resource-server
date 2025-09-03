@@ -1,0 +1,127 @@
+{
+  "test_files": {
+    "small_icon": {
+      "path": "achievements/icons/small_test.png",
+      "size": 2048,
+      "content_type": "image/png",
+      "metadata": {
+        "width": "64",
+        "height": "64",
+        "cache_control": "max-age=3600"
+      }
+    },
+    "large_icon": {
+      "path": "achievements/icons/large_test.png",
+      "size": 51200,
+      "content_type": "image/png",
+      "metadata": {
+        "width": "512",
+        "height": "512",
+        "cache_control": "max-age=7200"
+      }
+    },
+    "webp_icon": {
+      "path": "achievements/icons/test.webp",
+      "size": 15360,
+      "content_type": "image/webp",
+      "metadata": {
+        "width": "256",
+        "height": "256",
+        "cache_control": "max-age=86400"
+      }
+    },
+    "multipart_file": {
+      "path": "achievements/icons/large_multipart.png",
+      "size": 10485760,
+      "content_type": "image/png",
+      "parts": 2,
+      "part_size": 5242880,
+      "metadata": {
+        "width": "2048",
+        "height": "2048",
+        "cache_control": "max-age=86400"
+      }
+    }
+  },
+  "test_parameters": {
+    "achievement_ids": [
+      "123e4567-e89b-12d3-a456-426614174001",
+      "123e4567-e89b-12d3-a456-426614174002",
+      "123e4567-e89b-12d3-a456-426614174003",
+      "550e8400-e29b-41d4-a716-446655440001",
+      "550e8400-e29b-41d4-a716-446655440002"
+    ],
+    "workout_ids": [
+      "660f9511-f3ac-52e5-b827-557766551001",
+      "660f9511-f3ac-52e5-b827-557766551002",
+      "660f9511-f3ac-52e5-b827-557766551003"
+    ],
+    "app_ids": [
+      12345,
+      67890,
+      54321
+    ],
+    "client_app_ids": [
+      98765,
+      11111,
+      22222
+    ]
+  },
+  "test_scopes": [
+    {
+      "scope": "G",
+      "scope_value": 0,
+      "description": "Global scope"
+    },
+    {
+      "scope": "A",
+      "scope_value": 12345,
+      "description": "App scope with app_id 12345"
+    },
+    {
+      "scope": "CA",
+      "scope_value": 98765,
+      "description": "ClientApp scope with client_app_id 98765"
+    }
+  ],
+  "test_providers": [
+    {
+      "name": "cdn",
+      "supports_multipart": false,
+      "supports_signed_urls": true,
+      "test_bucket": "test-cdn-bucket"
+    },
+    {
+      "name": "gcs",
+      "supports_multipart": true,
+      "supports_signed_urls": true,
+      "test_bucket": "test-gcs-bucket"
+    },
+    {
+      "name": "r2",
+      "supports_multipart": true,
+      "supports_signed_urls": true,
+      "test_bucket": "test-r2-bucket"
+    }
+  ],
+  "test_urls": {
+    "base_api_url": "http://localhost:8081/api/v1",
+    "health_endpoint": "/health",
+    "definitions_endpoint": "/resources/definitions",
+    "providers_endpoint": "/resources/providers",
+    "achievements_endpoint": "/achievements/"
+  },
+  "test_content_types": [
+    "image/png",
+    "image/jpeg",
+    "image/webp",
+    "image/svg+xml",
+    "application/octet-stream"
+  ],
+  "test_cache_controls": [
+    "max-age=3600",
+    "max-age=86400",
+    "no-cache",
+    "public, max-age=31536000"
+  ]
+}

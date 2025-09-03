@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"reflect"
 
-	"avironactive.com/resource"
+	"avironactive.com/resource/metadata"
 	"avironactive.com/resource/provider"
+	"avironactive.com/resource/resolver"
 )
 
-// NewPathDefinitionResponse creates PathDefinitionResponse from resource.PathDefinition
-func NewPathDefinitionResponse(def resource.PathDefinition) PathDefinitionResponse {
+// NewPathDefinitionResponse creates PathDefinitionResponse from resolver.PathDefinition
+func NewPathDefinitionResponse(def resolver.PathDefinition) PathDefinitionResponse {
 	parameters := make([]PathParameterResponse, 0, len(def.Parameters))
 	for _, param := range def.Parameters {
 		// Convert validation.Rule slice to string slice
@@ -144,13 +145,13 @@ func NewFileListResponseFromProvider(result *provider.ListObjectsResult, maxKeys
 }
 
 // NewSignedURLResponseFromProvider creates SignedURLResponse from provider SignedURL
-func NewSignedURLResponseFromProvider(resolvedResource *resource.ResolvedResource) *SignedURLResponse {
+func NewSignedURLResponseFromProvider(resolvedResource *resolver.ResolvedResource) *SignedURLResponse {
 	return &SignedURLResponse{
-		URL:         resolvedResource.URL.URL,
-		Method:      resolvedResource.URL.Method,
-		Headers:     resolvedResource.URL.Headers,
-		ExpiresAt:   resolvedResource.URL.ExpiresAt,
-		ResolvePath: resolvedResource.ResolvedPath,
+		URL:          resolvedResource.ObjectURL.URL,
+		Method:       resolvedResource.ObjectURL.Method,
+		Headers:      resolvedResource.ObjectURL.Headers,
+		ExpiresAt:    resolvedResource.ObjectURL.ExpiresAt,
+		ResolvedPath: resolvedResource.ResolvedPath.Path,
 	}
 }
 
@@ -201,8 +202,8 @@ func NewFileMetadataFromProvider(metadata *provider.ObjectMetadata) *FileMetadat
 	}
 }
 
-// NewChecksumInfoFromProvider creates ChecksumInfo from provider.Checksum
-func NewChecksumInfoFromProvider(checksum provider.Checksum) ChecksumInfo {
+// NewChecksumInfoFromProvider creates ChecksumInfo from metadata.Checksum
+func NewChecksumInfoFromProvider(checksum metadata.Checksum) ChecksumInfo {
 	return ChecksumInfo{
 		Algorithm: string(checksum.Algorithm),
 		Value:     checksum.Value,

@@ -5,6 +5,7 @@ import (
 
 	"avironactive.com/common/context"
 	"avironactive.com/resource/provider"
+	"avironactive.com/resource/resolver"
 
 	"avironactive.com/resource"
 	"github.com/anh-nguyen/resource-server/internal/app/dto"
@@ -43,7 +44,7 @@ func (uc *FileOperationsUseCase) ListFiles(ctx context.Context, req *dto.ListFil
 // GenerateUploadURL generates a signed URL for file upload
 func (uc *FileOperationsUseCase) GenerateUploadURL(ctx context.Context, req *dto.GenerateUploadURLRequest) (*dto.SignedURLResponse, error) {
 	opts := req.Upload.To()
-	signedURL, err := uc.manager.PathDefinitionResolver().ResolveUploadURL(ctx, resource.PathDefinitionName(req.Definition), opts)
+	signedURL, err := uc.manager.PathDefinitionResolver().ResolveUploadURL(ctx, resolver.PathDefinitionName(req.Definition), opts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate upload URL: %w", err)
 	}
@@ -53,12 +54,9 @@ func (uc *FileOperationsUseCase) GenerateUploadURL(ctx context.Context, req *dto
 
 // GenerateDownloadURL generates a signed URL for file download
 func (uc *FileOperationsUseCase) GenerateDownloadURL(ctx context.Context, req *dto.GenerateDownloadURLRequest) (*dto.SignedURLResponse, error) {
-	// Generate signed URL using request DTO conversion
-	var opts *resource.DownloadResolveOptions
+	var opts *resolver.PathDownloadOpts
 	if req.Download != nil {
 		opts = req.Download.To()
-	} else {
-		opts = &resource.DownloadResolveOptions{}
 	}
 	signedURL, err := uc.manager.PathURLResolver().ResolveDownloadURL(ctx, req.FilePath, opts)
 	if err != nil {
